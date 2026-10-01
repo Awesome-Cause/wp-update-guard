@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "output_dir": ".wp-update-guard",
+  "diff_threshold": 0.02,
+  "core_update": false,
+  "viewport": { "width": 1280, "height": 800 },
+  "sites": [
+    {
+      "id": "bakery-on-main",
+      "name": "Bakery on Main",
+      "pages": [
+        { "id": "home", "path": "/" },
+        { "id": "shop", "path": "/shop/" },
+        { "id": "contact", "path": "/contact/" },
+        { "id": "checkout", "path": "/checkout/" }
+      ],
+      "staging": {
+        "url": "https://staging.example.com",
+        "ssh": "deploy@staging.example.net",
+        "wp_path": "/var/www/staging"
+      },
+      "live": {
+        "url": "https://www.example.com",
+        "ssh": "deploy@live.example.net",
+        "wp_path": "/var/www/live"
+      }
+    }
+  ]
+}
