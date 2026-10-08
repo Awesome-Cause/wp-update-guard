@@ -43,7 +43,7 @@ Look for `wp-update-guard.json` starting at the current working directory and wa
 python3 scripts/guard.py init
 ```
 
-That writes `wp-update-guard.json` and `.wp-update-guard/` for run state and screenshots. The schema is in [references/config.md](references/config.md).
+That writes `wp-update-guard.json` and adds `.wp-update-guard/` to `.gitignore`. Run state and screenshots are written into `.wp-update-guard/` later. Pass `--force` to replace an existing config. The schema is in [references/config.md](references/config.md).
 
 Each site needs:
 

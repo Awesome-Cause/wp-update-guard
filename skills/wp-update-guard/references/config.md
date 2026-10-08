@@ -1,6 +1,6 @@
 # Config
 
-`wp-update-guard.json` lives in the project the agent is working in (or a parent folder). `python3 scripts/guard.py init` writes a starter file.
+`wp-update-guard.json` lives in the project the agent is working in (or a parent folder). `python3 scripts/guard.py init` writes a starter file. Pass `--force` to replace one that already exists. `guard.py --dry-run` prints SSH/WP-CLI commands without running them.
 
 ## File
 
