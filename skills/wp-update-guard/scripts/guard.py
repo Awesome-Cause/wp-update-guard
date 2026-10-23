@@ -17,6 +17,8 @@ from urllib.parse import urlparse
 
 
 SITE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+SSH_DEST_RE = re.compile(r"^[A-Za-z0-9._-]+@[A-Za-z0-9][A-Za-z0-9.-]*$")
+ROLLBACKABLE_PHASES = frozenset({"fail_rollback", "compare", "screenshot_after", "update_staging"})
 HERE = Path(__file__).resolve().parent
 COMPARE_SCRIPT = HERE / "compare-pages.py"
 CAPTURE_SCRIPT = HERE / "capture-pages.mjs"
@@ -110,6 +112,11 @@ def validate_site(site: dict[str, Any]) -> None:
         url = target.get("url")
         if not isinstance(url, str) or urlparse(url).scheme not in ("http", "https"):
             raise GuardError(f"{site_id}: {side}.url must be an http(s) URL")
+        if target.get("ssh") is not None:
+            try:
+                validate_ssh_destination(target.get("ssh"))
+            except GuardError as exc:
+                raise GuardError(f"{site_id}: {side}.ssh {exc}") from exc
 
 
 def load_bundle(config_path: Path) -> tuple[dict[str, Any], Path, Path]:
@@ -176,17 +183,28 @@ def run_dir(output_dir: Path, row: dict[str, Any], site_id: str) -> Path:
     return output_dir / "runs" / str(run_id) / site_id
 
 
-def ssh_wp(target: dict[str, Any], command: str, *, dry_run: bool) -> str:
-    ssh = target.get("ssh")
+def validate_ssh_destination(value: Any) -> str:
+    if not isinstance(value, str) or not value.strip():
+        raise GuardError("must be user@host")
+    dest = value.strip()
+    if dest.startswith("-") or not SSH_DEST_RE.fullmatch(dest):
+        raise GuardError("must be user@host (set extra options in ~/.ssh/config)")
+    return dest
+
+
+def ssh_argv(target: dict[str, Any], command: str) -> list[str]:
+    dest = validate_ssh_destination(target.get("ssh"))
     wp_path = target.get("wp_path")
-    if not isinstance(ssh, str) or not ssh.strip():
-        raise GuardError("ssh target is missing")
     if not isinstance(wp_path, str) or not wp_path.startswith("/"):
         raise GuardError("wp_path must be an absolute path")
     if ".." in wp_path or any(ch in wp_path for ch in " \t\n;|&"):
         raise GuardError("wp_path looks unsafe")
     remote = f"wp --path={shlex.quote(wp_path)} {command}"
-    argv = ["ssh", "-o", "BatchMode=yes", ssh, remote]
+    return ["ssh", "-o", "BatchMode=yes", "--", dest, remote]
+
+
+def ssh_wp(target: dict[str, Any], command: str, *, dry_run: bool) -> str:
+    argv = ssh_argv(target, command)
     if dry_run:
         return " ".join(shlex.quote(part) for part in argv)
     try:
@@ -253,11 +271,44 @@ def capture_pages(
         raise GuardError(detail[:800])
     report_path = dest / "capture.json"
     if report_path.is_file():
-        return load_json(report_path)
-    try:
-        return json.loads(completed.stdout)
-    except json.JSONDecodeError as exc:
-        raise GuardError("screenshot capture did not return JSON") from exc
+        report = load_json(report_path)
+    else:
+        try:
+            report = json.loads(completed.stdout)
+        except json.JSONDecodeError as exc:
+            raise GuardError("screenshot capture did not return JSON") from exc
+    require_healthy_capture(report, site)
+    if completed.returncode != 0:
+        raise GuardError("screenshot capture failed")
+    return report
+
+
+def require_healthy_capture(report: dict[str, Any], site: dict[str, Any]) -> None:
+    if not isinstance(report, dict) or report.get("dry_run"):
+        return
+    pages_by_id: dict[str, dict[str, Any]] = {}
+    for page in report.get("pages") or []:
+        if isinstance(page, dict) and page.get("id"):
+            pages_by_id[str(page["id"])] = page
+    missing: list[str] = []
+    bad_status: list[str] = []
+    for page in site["pages"]:
+        page_id = str(page["id"])
+        captured = pages_by_id.get(page_id)
+        if captured is None:
+            missing.append(page_id)
+            continue
+        if captured.get("status") != 200:
+            bad_status.append(page_id)
+    if report.get("ok") is False or missing or bad_status:
+        parts = []
+        if missing:
+            parts.append("skipped: " + ", ".join(missing))
+        if bad_status:
+            parts.append("not HTTP 200: " + ", ".join(bad_status))
+        raise GuardError(
+            "page capture failed (" + "; ".join(parts or ["capture.ok is false"]) + ")"
+        )
 
 
 def cmd_init(args: argparse.Namespace) -> int:
@@ -330,7 +381,7 @@ def cmd_snapshot(
         row["page_results"] = []
         row["updated"] = []
         row["phase"] = "snapshot_before"
-    elif not dry_run and row.get("phase") not in ("screenshot_after", "update_staging", "compare"):
+    elif not dry_run and row.get("phase") not in ("screenshot_after", "compare"):
         raise GuardError("after screenshots come after the staging update")
     dest_root = (
         output_dir / "runs" / "dry-run" / site["id"]
@@ -338,7 +389,13 @@ def cmd_snapshot(
         else run_dir(output_dir, row, site["id"])
     )
     dest = dest_root / when
-    capture = capture_pages(site, dest, config, dry_run=dry_run)
+    try:
+        capture = capture_pages(site, dest, config, dry_run=dry_run)
+    except GuardError:
+        if when == "after" and not dry_run:
+            row["phase"] = "fail_rollback"
+            row["decision"] = "Rolled back"
+        raise
     if when == "before":
         if not dry_run:
             row["inventory"] = inventory(site["staging"], dry_run=False)
@@ -371,6 +428,7 @@ def cmd_update_staging(
         )
     if not dry_run:
         row["updated"] = commands
+        row["tested"] = inventory(site["staging"], dry_run=False)
         row["phase"] = "screenshot_after"
     return {"updated": logs, "phase": row["phase"]}
 
@@ -385,6 +443,8 @@ def cmd_compare(
 ) -> dict[str, Any]:
     if not dry_run and row.get("phase") not in ("compare", "screenshot_after"):
         raise GuardError("compare only after after-screenshots")
+    if not row.get("updated"):
+        raise GuardError("compare only after staging has been updated")
     dest = run_dir(output_dir, row, site["id"])
     report_path = dest / "compare.json"
     argv = [
@@ -407,13 +467,45 @@ def cmd_compare(
         raise GuardError(detail[:800])
     report = load_json(report_path)
     row["page_results"] = report.get("pages") or []
-    if report.get("pass"):
+    healthy = True
+    try:
+        require_healthy_capture(_load_capture_report(dest / "before"), site)
+        require_healthy_capture(_load_capture_report(dest / "after"), site)
+        result_ids = {page.get("id") for page in row["page_results"]}
+        skipped = [str(page["id"]) for page in site["pages"] if page["id"] not in result_ids]
+        if skipped:
+            raise GuardError("configured pages were skipped: " + ", ".join(skipped))
+    except GuardError as exc:
+        healthy = False
+        row["error"] = str(exc)
+    if report.get("pass") and healthy:
         row["decision"] = "Pass"
         row["phase"] = "pass_promote"
     else:
         row["decision"] = "Rolled back"
         row["phase"] = "fail_rollback"
     return {"report": report, "phase": row["phase"], "decision": row["decision"]}
+
+
+def _load_capture_report(folder: Path) -> dict[str, Any]:
+    path = folder / "capture.json"
+    if not path.is_file():
+        raise GuardError(f"missing capture report in {folder.name}")
+    return load_json(path)
+
+
+def version_pin_commands(items: list[dict[str, Any]], kind: str) -> list[str]:
+    commands = []
+    for item in items:
+        name = item.get("name")
+        version = item.get("version")
+        status = item.get("status")
+        if not name or not version or status == "must-use":
+            continue
+        commands.append(
+            f"{kind} install {shlex.quote(str(name))} --version={shlex.quote(str(version))} --force"
+        )
+    return commands
 
 
 def restore_items(target: dict[str, Any], items: list[dict[str, Any]], kind: str, *, dry_run: bool) -> list[str]:
@@ -431,7 +523,7 @@ def restore_items(target: dict[str, Any], items: list[dict[str, Any]], kind: str
 
 
 def cmd_rollback(site: dict[str, Any], row: dict[str, Any], *, dry_run: bool) -> dict[str, Any]:
-    if not dry_run and row.get("phase") not in ("fail_rollback", "compare"):
+    if not dry_run and row.get("phase") not in ROLLBACKABLE_PHASES:
         raise GuardError("rollback is for a failed compare")
     inventory_data = row.get("inventory") or {}
     plugins = inventory_data.get("plugins") or []
@@ -456,12 +548,23 @@ def cmd_rollback(site: dict[str, Any], row: dict[str, Any], *, dry_run: bool) ->
 def cmd_promote(site: dict[str, Any], row: dict[str, Any], config: dict[str, Any], *, dry_run: bool) -> dict[str, Any]:
     if not dry_run and row.get("phase") != "pass_promote":
         raise GuardError("promote only after every key page passed")
+    if not row.get("updated"):
+        raise GuardError("promote only after staging has been updated")
+    tested = row.get("tested")
+    if not isinstance(tested, dict):
+        raise GuardError("promote needs the tested staging versions")
     live = site.get("live")
     if not isinstance(live, dict) or not live.get("ssh") or not live.get("wp_path"):
         raise GuardError("live ssh and wp_path are required to go live")
-    commands = ["plugin update --all", "theme update --all"]
+    commands = version_pin_commands(tested.get("plugins") or [], "plugin")
+    commands.extend(version_pin_commands(tested.get("themes") or [], "theme"))
     if config.get("core_update"):
-        commands.append("core update")
+        core = tested.get("core")
+        if not core:
+            raise GuardError("promote needs the tested core version")
+        commands.append(f"core update --version={shlex.quote(str(core))}")
+    if not commands:
+        raise GuardError("promote needs the tested staging versions")
     logs = []
     for command in commands:
         logs.append({"command": command, "output": ssh_wp(live, command, dry_run=dry_run)})
@@ -496,7 +599,19 @@ def cmd_run(
         steps.append(cmd_update_staging(site, row, config, dry_run=False))
         phase = row.get("phase")
     if phase == "screenshot_after":
-        steps.append(cmd_snapshot(site, row, config, output_dir, "after", dry_run=False))
+        try:
+            steps.append(cmd_snapshot(site, row, config, output_dir, "after", dry_run=False))
+        except GuardError as exc:
+            row["error"] = str(exc)
+            row["phase"] = "fail_rollback"
+            row["decision"] = "Rolled back"
+            steps.append(cmd_rollback(site, row, dry_run=False))
+            return {
+                "phase": row.get("phase"),
+                "decision": row.get("decision"),
+                "steps": [step.get("summary") or step.get("phase") for step in steps],
+                "summary": (steps[-1] or {}).get("summary") if steps else None,
+            }
         phase = row.get("phase")
     if phase == "compare":
         steps.append(cmd_compare(site, row, config, output_dir, dry_run=False))
@@ -545,6 +660,8 @@ def build_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    state: dict[str, Any] | None = None
+    state_path: Path | None = None
     try:
         if args.command == "init":
             return cmd_init(args)
@@ -577,6 +694,8 @@ def main(argv: list[str] | None = None) -> int:
         emit({"ok": True, **result})
         return 0
     except GuardError as exc:
+        if state is not None and state_path is not None and not getattr(args, "dry_run", False):
+            save_json(state_path, state)
         emit({"ok": False, "error": str(exc)})
         return 1
 
