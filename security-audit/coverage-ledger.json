@@ -1,0 +1,2442 @@
+[
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2FSKILL.md%23agent%20runbook::skills%2Fwp-update-guard%2FSKILL.md%23never%20update%20live%20until%20staging%20passes::skills%2Fwp-update-guard%2FSKILL.md::AI-AND-LLM.md%23Action-confirmation%20and%20approval%20binding",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/SKILL.md#agent runbook",
+      "boundary": "skills/wp-update-guard/SKILL.md#never update live until staging passes",
+      "subsystem": "skills/wp-update-guard/SKILL.md",
+      "attack_class": "AI-AND-LLM.md#Action-confirmation and approval binding"
+    },
+    "surface": "SKILL.md agent instructions and tool commands",
+    "boundary": "Model-controlled SSH and promote without code-level confirmation binding",
+    "subsystem": "agent skill runbook",
+    "attack_class": "Action-confirmation binding for promote and update-staging",
+    "starting_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "AI-AND-LLM.md#Core discipline",
+      "AI-AND-LLM.md#Action-confirmation and approval binding",
+      "AI-AND-LLM.md#Excessive agency and confused-deputy authority",
+      "AI-AND-LLM.md#Universal moves",
+      "AI-AND-LLM.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-agent-secrets",
+    "reviewed_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "Live mutation is bound to a normalized, user-approved promote object (command, site, live target) after arguments are final",
+        "method": "source",
+        "result": "No confirmation record, prompt, or approval token exists. The coded live-site control is cmd_promote requiring phase pass_promote. Architecture treats the OS invoker and an intentional update request as authorization. A user asking to update WordPress is not a delegation defect merely because the model runs promote after a Pass.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "cmd_run does not apply a stronger gate than single-phase promote after compare",
+        "method": "source",
+        "result": "cmd_run chains compare into cmd_promote in-process when phase becomes pass_promote, so the SKILL.md visual override cannot run between those steps. Resume via run from pass_promote also promotes immediately. This is the designed walk-remaining-phases behavior and overlaps the peer-owned compare-to-promote phase-gate units; it is not a separate confirmation-binding failure.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Redact URL userinfo and wrap ssh_wp stderr/stdout in emit; do not return raw remote streams from update-staging or promote.",
+      "cmd_init should gitignore the configured output_dir, not only the literal .wp-update-guard/ path.",
+      "Pin the Playwright install in SKILL.md instead of unpinned npx --yes playwright install chromium.",
+      "If a human pause before live is desired, add an explicit confirm flag or stop cmd_run after compare so visual review can bind promote arguments."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2FSKILL.md%23agent%20runbook::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh_wp::skills%2Fwp-update-guard%2FSKILL.md::AI-AND-LLM.md%23Excessive%20agency%20and%20confused-deputy%20authority",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/SKILL.md#agent runbook",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#ssh_wp",
+      "subsystem": "skills/wp-update-guard/SKILL.md",
+      "attack_class": "AI-AND-LLM.md#Excessive agency and confused-deputy authority"
+    },
+    "surface": "SKILL.md agent instructions and tool commands",
+    "boundary": "Agent uses operator SSH keys as a broad service identity",
+    "subsystem": "agent skill runbook",
+    "attack_class": "Excessive agency when agent runs WP-CLI with host SSH credentials",
+    "starting_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "AI-AND-LLM.md#Core discipline",
+      "AI-AND-LLM.md#Excessive agency and confused-deputy authority",
+      "AI-AND-LLM.md#Tool-argument injection into a downstream sink",
+      "AI-AND-LLM.md#Universal moves",
+      "AI-AND-LLM.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-agent-secrets",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "The tool handler uses a service identity broader than the requesting principal, without re-checking that principal on the named site",
+        "method": "source",
+        "result": "Effective identity is the OS invoker and that user's default SSH keys (BatchMode=yes). There is no separate product user, session, or service account. The requester can run the same guard.py/ssh commands directly. A shared local credential without a second principal is not a confused-deputy defect. SKILL.md hard rules are not a coded authorization layer.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "ssh_wp scopes the remote command to wp --path after validating wp_path, and does not accept an arbitrary remote shell from site id alone",
+        "method": "source",
+        "result": "wp_path must be absolute and rejects .., whitespace, and ;|&, then is shlex.quoted. The ssh destination is a non-empty string with no further shape check (peer-owned access-control/injection units). Command verbs are fixed strings in update/promote/inventory/rollback paths.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Redact URL userinfo and wrap ssh_wp stderr/stdout in emit; do not return raw remote streams from update-staging or promote.",
+      "cmd_init should gitignore the configured output_dir, not only the literal .wp-update-guard/ path.",
+      "Pin the Playwright install in SKILL.md instead of unpinned npx --yes playwright install chromium.",
+      "If a human pause before live is desired, add an explicit confirm flag or stop cmd_run after compare so visual review can bind promote arguments."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2FSKILL.md%23agent%20runbook::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh_wp::skills%2Fwp-update-guard%2FSKILL.md::AI-AND-LLM.md%23Indirect%20injection%20through%20retrieved%20or%20ingested%20content",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/SKILL.md#agent runbook",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#ssh_wp",
+      "subsystem": "skills/wp-update-guard/SKILL.md",
+      "attack_class": "AI-AND-LLM.md#Indirect injection through retrieved or ingested content"
+    },
+    "surface": "SKILL.md agent instructions and untrusted staging/config content",
+    "boundary": "Untrusted staging or config content reaching agent tool arguments",
+    "subsystem": "agent skill runbook",
+    "attack_class": "Indirect injection via staging pages, inventory JSON, or shared config",
+    "starting_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "AI-AND-LLM.md#Core discipline",
+      "AI-AND-LLM.md#Indirect injection through retrieved or ingested content",
+      "AI-AND-LLM.md#Tool-argument injection into a downstream sink",
+      "AI-AND-LLM.md#Universal moves",
+      "AI-AND-LLM.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-agent-secrets",
+    "reviewed_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "Untrusted staging-origin page content and remote WP-CLI text cannot drive operator-identity SSH/promote tools without a deterministic bind to the operator's requested action",
+        "method": "source",
+        "result": "Staging HTTP is a distinct anonymous principal. Playwright writes PNGs plus capture.json; snapshot emit returns that JSON; update-staging/promote emit raw WP-CLI stdout. SKILL.md requires the agent to look at before/after images and then run promote or rollback. The only isolation after those artifacts enter the agent context is prompt text. The pass_promote phase gate still blocks promote when compare failed. Whether a model will issue an unrequested tool call after reading instruction-like staging artifacts is not locally observable.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard/untrusted-staging-artifacts-to-agent-tools"
+    ],
+    "unresolved": [
+      "Whether a model following SKILL.md issues promote, update-staging, a different --site, or raw ssh after reading instruction-like staging screenshots or capture/SSH JSON"
+    ],
+    "hardening": [
+      "Redact URL userinfo and wrap ssh_wp stderr/stdout in emit; do not return raw remote streams from update-staging or promote.",
+      "cmd_init should gitignore the configured output_dir, not only the literal .wp-update-guard/ path.",
+      "Pin the Playwright install in SKILL.md instead of unpinned npx --yes playwright install chromium.",
+      "If a human pause before live is desired, add an explicit confirm flag or stop cmd_run after compare so visual review can bind promote arguments."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2FSKILL.md%23npx%20playwright%20install::skills%2Fwp-update-guard%2FSKILL.md%23unpinned%20playwright%20download::skills%2Fwp-update-guard%2FSKILL.md::SUPPLY-CHAIN-AND-RELEASE.md%23Mutable%20and%20unbound%20build%20inputs",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/SKILL.md#npx playwright install",
+      "boundary": "skills/wp-update-guard/SKILL.md#unpinned playwright download",
+      "subsystem": "skills/wp-update-guard/SKILL.md",
+      "attack_class": "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs"
+    },
+    "surface": "SKILL.md npx playwright install chromium",
+    "boundary": "Unpinned browser/runtime download onto the operator workstation",
+    "subsystem": "agent skill runbook",
+    "attack_class": "Supply-chain install of the screenshot runtime",
+    "starting_paths": [
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "SUPPLY-CHAIN-AND-RELEASE.md#Core discipline",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Mutable and unbound build inputs",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Universal moves",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 2,
+    "status": "candidate",
+    "agent_id": "hunter-wave2-gaps",
+    "reviewed_paths": [
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "README.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/SKILL.md",
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "README.md"
+        ],
+        "invariant": "The screenshot runtime installed onto the operator workstation must have a pinned identity and an integrity root independent of the download host",
+        "method": "source",
+        "result": "No package.json, lockfile, or checksum exists. SKILL.md tells the agent to run `npx --yes playwright install chromium` when Playwright is missing. capture-pages.mjs repeats that exact unpinned command in its import-failure hint, then import()s playwright and chromium.launch(). npx --yes skips the install prompt. The only identity is the mutable package name `playwright` plus whatever browser bits `install chromium` fetches. Architecture already recorded that Playwright/Chromium are optional runtime deps with no pin.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/SKILL.md",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "A lower-trust registry or CDN writer cannot substitute a different playwright/chromium digest that the skill then executes as the OS invoker",
+        "method": "source",
+        "result": "The lower-trust writer is npm latest resolution of unscoped `playwright` and the Playwright browser CDN. The consumer is the agent/operator shell on the workstation, which is a named protected resource (SSH keys, filesystem). After that handoff, loadPlaywright imports the installed package and launches Chromium. npm/npx signing defaults and the CDN checksum policy are not source-visible.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard.skill.unpinned-npx-playwright-install"
+    ],
+    "unresolved": [
+      "OS-enforced sandbox controls unavailable",
+      "npm npx unpinned-name resolution, package signing, and Playwright chromium CDN integrity defaults are registry/CDN facts not in this repository"
+    ],
+    "parent_note": "Added after wave-1 critic accepted hunter uncovered / missing-unit proposals.",
+    "hardening": [
+      "Pin Playwright (package version and browser revision) in the skill and drop `--yes`, or vendor a lockfile and verify checksums before chromium.launch.",
+      "Cap fullPage screenshot clip height and output bytes in capture-pages.mjs; also cap viewport width/height (today only a minimum of 320 is enforced).",
+      "Cap ssh_wp stdout bytes and inventory JSON depth/item counts; wrap json.loads in GuardError so malformed remote list output cannot abort with an unhandled exception.",
+      "flock or atomically replace state.json; reject duplicate site ids in validate_site so concurrent or mis-keyed client sites cannot clobber one row.",
+      "cmd_update_staging should record post-update plugin/theme versions; live pinning of that set is the peer promote finding, not a second staging trust-expansion bug."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23--ids::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23join%20outDir%20id.png::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/capture-pages.mjs#--ids",
+      "boundary": "skills/wp-update-guard/scripts/capture-pages.mjs#join outDir id.png",
+      "subsystem": "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+    },
+    "surface": "Standalone capture --ids and screenshot join",
+    "boundary": "Screenshot filename from unsanitized --ids",
+    "subsystem": "capture-pages.mjs Playwright client",
+    "attack_class": "Path traversal through capture --ids when not using guard.py validation",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-capture",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Screenshot path join(outDir, id + \".png\") cannot escape --out",
+        "method": "source",
+        "result": "Standalone --ids is split/trimmed only and interpolated into join. POSIX join treats an absolute id as a new root and treats .. as parent. pageId() used when --ids is omitted keeps .. and dots because it only strips non-[\\w.-] characters. page.screenshot writes that path.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "guard.py or another deputy can pass an unsanitized id while intending --out as a write jail",
+        "method": "source",
+        "result": "validate_site requires page id to fullmatch SITE_ID_RE ^[a-z0-9][a-z0-9-]*$, and capture_pages always forwards those ids. The guard deputy cannot traverse. SKILL.md standalone example omits --ids. The standalone invoker also chooses --out and already has the process filesystem authority, so escape is same-principal.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "In capture-pages.mjs, reject page tokens that are not a single relative path (must start with one slash, must not contain // or backslash, must not parse with a scheme) and abort if new URL(path, origin).origin !== origin before page.goto.",
+      "In capture-pages.mjs, apply guard.py SITE_ID_RE to every --ids value and to pageId() output before join(outDir, id + \".png\").",
+      "After the first successful goto, abort frame navigations whose URL.origin differs from the captured origin so staging HTML cannot retarget the screenshot tab.",
+      "If capture-side resource limits are added later, cap fullPage screenshot width/height/bytes; viewport today has a minimum of 320 and no maximum."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23--pages%20and%20--base-url::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23new%20URL%20path%20origin::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/capture-pages.mjs#--pages and --base-url",
+      "boundary": "skills/wp-update-guard/scripts/capture-pages.mjs#new URL path origin",
+      "subsystem": "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+    },
+    "surface": "Playwright capture CLI and guard.py capture_pages",
+    "boundary": "Page path joined with staging origin can leave the intended host",
+    "subsystem": "capture-pages.mjs Playwright client",
+    "attack_class": "SSRF and open navigation via page path URL construction",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+    "selected_companion_blocks": [
+      "CLIENT-SIDE.md#Core discipline",
+      "CLIENT-SIDE.md#Client-side navigation confusion",
+      "CLIENT-SIDE.md#Universal moves",
+      "CLIENT-SIDE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-capture",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/config.md",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/references/config.md"
+        ],
+        "invariant": "pages[].path is accepted only as a same-origin URL path on the validated staging.url origin",
+        "method": "source",
+        "result": "validate_site requires http(s) on staging.url but does not type-check or shape-check page path. config.md calls staging.url the screenshot origin and path the URL path. capture_pages joins raw page.path values into --pages.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "new URL(path, origin) after slash-prefixing cannot change host relative to --base-url origin",
+        "method": "source",
+        "result": "origin is taken from --base-url. A token that does not start with / is prefixed. Absolute http(s) page values therefore stay on origin. A token that is already protocol-relative (//host or Chromium-normalized /\\host) is left intact; WHATWG resolution then replaces the host. page.goto is called with that href.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "A lower-trust principal can force Playwright to fetch a host the operator did not select as staging.url",
+        "method": "source",
+        "result": "The only sources of page tokens are operator argv --pages and config pages[].path. The same principal already chooses --base-url / staging.url. Committed config is operator input. Off-origin resolution is a failed bind, not cross-principal SSRF or privilege gain.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "In capture-pages.mjs, reject page tokens that are not a single relative path (must start with one slash, must not contain // or backslash, must not parse with a scheme) and abort if new URL(path, origin).origin !== origin before page.goto.",
+      "In capture-pages.mjs, apply guard.py SITE_ID_RE to every --ids value and to pageId() output before join(outDir, id + \".png\").",
+      "After the first successful goto, abort frame navigations whose URL.origin differs from the captured origin so staging HTML cannot retarget the screenshot tab.",
+      "If capture-side resource limits are added later, cap fullPage screenshot width/height/bytes; viewport today has a minimum of 320 and no maximum."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23--pages%20and%20--base-url::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23new%20URL%20path%20origin::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs::CLIENT-SIDE.md%23Client-side%20navigation%20confusion",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/capture-pages.mjs#--pages and --base-url",
+      "boundary": "skills/wp-update-guard/scripts/capture-pages.mjs#new URL path origin",
+      "subsystem": "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "attack_class": "CLIENT-SIDE.md#Client-side navigation confusion"
+    },
+    "surface": "Playwright capture CLI and guard.py capture_pages",
+    "boundary": "Untrusted staging HTML runs in headless Chromium",
+    "subsystem": "capture-pages.mjs Playwright client",
+    "attack_class": "Client-side navigation confusion and protocol-relative paths",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "CLIENT-SIDE.md#Core discipline",
+      "CLIENT-SIDE.md#Client-side navigation confusion",
+      "CLIENT-SIDE.md#DOM-based XSS",
+      "CLIENT-SIDE.md#Universal moves",
+      "CLIENT-SIDE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-capture",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Capture page tokens cannot become javascript: or data: navigation targets",
+        "method": "source",
+        "result": "Tokens that do not start with / are prefixed, so javascript: and data: become same-origin paths. Protocol-relative // tokens can change host. There is no scheme/destination policy after construction and no check that the resolved URL.origin equals the captured origin.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Untrusted staging HTML can confuse a victim session or shared persistence via redirect or executable navigation",
+        "method": "source",
+        "result": "chromium.launch({headless:true}) plus browser.newPage creates an ephemeral context with no persistent profile, cookies, exposeFunction, or window.open. page.goto follows HTTP redirects and later staging script may change location. CLIENT-SIDE impact requires a victim session, another origin's credentials, or shared persistence; none are present. Reverse tabnabbing does not apply.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "In capture-pages.mjs, reject page tokens that are not a single relative path (must start with one slash, must not contain // or backslash, must not parse with a scheme) and abort if new URL(path, origin).origin !== origin before page.goto.",
+      "In capture-pages.mjs, apply guard.py SITE_ID_RE to every --ids value and to pageId() output before join(outDir, id + \".png\").",
+      "After the first successful goto, abort frame navigations whose URL.origin differs from the captured origin so staging HTML cannot retarget the screenshot tab.",
+      "If capture-side resource limits are added later, cap fullPage screenshot width/height/bytes; viewport today has a minimum of 320 and no maximum."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23page.goto::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23chromium.launch::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/capture-pages.mjs#page.goto",
+      "boundary": "skills/wp-update-guard/scripts/capture-pages.mjs#chromium.launch",
+      "subsystem": "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "Headless Chromium loading staging pages",
+    "boundary": "Staging-origin script execution inside the capture browser",
+    "subsystem": "capture-pages.mjs Playwright client",
+    "attack_class": "Drive-by / hostile page impact on the operator Playwright process",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [
+      "CLIENT-SIDE.md#Core discipline",
+      "CLIENT-SIDE.md#DOM-based XSS",
+      "CLIENT-SIDE.md#Universal moves",
+      "CLIENT-SIDE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-capture",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Staging HTML/JS reaches a privileged injection sink in the capture process",
+        "method": "source",
+        "result": "No innerHTML, document.write, eval, exposeFunction, or string-evaluated API appears. page.goto loads the constructed URL in stock Chromium. Screenshot path and capture.json fields are taken from argv/config, not from page DOM. This is intended rendering, not DOM XSS or command injection.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-capture",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Hostile staging script can take over the operator Playwright process beyond ordinary browsing",
+        "method": "source",
+        "result": "Launch uses a fresh headless browser with only viewport options. No persistent user-data dir, extra permissions, ignoreHTTPSErrors, or bypassCSP. Drive-by RCE would require a renderer bug outside source. Staging JS may issue further HTTP(S) requests from the operator IP; that is default browser behavior, not a coded confused-deputy sink. Crash or huge page is not treated as code execution.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "In capture-pages.mjs, reject page tokens that are not a single relative path (must start with one slash, must not contain // or backslash, must not parse with a scheme) and abort if new URL(path, origin).origin !== origin before page.goto.",
+      "In capture-pages.mjs, apply guard.py SITE_ID_RE to every --ids value and to pageId() output before join(outDir, id + \".png\").",
+      "After the first successful goto, abort frame navigations whose URL.origin differs from the captured origin so staging HTML cannot retarget the screenshot tab.",
+      "If capture-side resource limits are added later, cap fullPage screenshot width/height/bytes; viewport today has a minimum of 320 and no maximum."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23page.screenshot%20fullPage::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs%23unbounded%20screenshot%20size::skills%2Fwp-update-guard%2Fscripts%2Fcapture-pages.mjs::RESOURCE-EXHAUSTION-AND-AVAILABILITY.md%23Reachable%20fatal%20error%20or%20deadlock",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/capture-pages.mjs#page.screenshot fullPage",
+      "boundary": "skills/wp-update-guard/scripts/capture-pages.mjs#unbounded screenshot size",
+      "subsystem": "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "attack_class": "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Reachable fatal error or deadlock"
+    },
+    "surface": "Playwright fullPage screenshot after staging page.goto",
+    "boundary": "Staging HTML controls screenshot bitmap size written under --out",
+    "subsystem": "capture-pages.mjs Playwright client",
+    "attack_class": "Resource exhaustion via unbounded fullPage capture",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Core discipline",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Reachable fatal error or deadlock",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Universal moves",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 2,
+    "status": "covered",
+    "agent_id": "hunter-wave2-gaps",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "fullPage screenshot height and output bytes are capped so staging HTML cannot choose the bitmap size written under --out",
+        "method": "source",
+        "result": "page.screenshot({path, fullPage:true}) has no clip, maxHeight, or byte cap. Viewport is checked only as finite numbers >= 320; config or --width/--height may be arbitrarily large. Staging HTML after page.goto controls document height. The PNG is written to join(outDir, id + \".png\"). No source-visible Chromium fullPage limit appears in this repo.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "An untrusted fullPage fatal must affect another user, a shared service, a safety function, or operator-owned spend \u2014 not only the requester's capture process",
+        "method": "source",
+        "result": "capture-pages.mjs is a one-shot local Node process. guard.py runs it as a subprocess and accepts exit 0 or 1. An OOM kill (e.g. 137) or a throw from screenshot is isolated to that child. There is no shared worker, tenant pool, or paid sink. Companion rule: missing limits without concrete shared impact are hardening. Downstream PNG decode amplification is peer-owned.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "parent_note": "Added after wave-1 critic accepted hunter uncovered / missing-unit proposals.",
+    "hardening": [
+      "Pin Playwright (package version and browser revision) in the skill and drop `--yes`, or vendor a lockfile and verify checksums before chromium.launch.",
+      "Cap fullPage screenshot clip height and output bytes in capture-pages.mjs; also cap viewport width/height (today only a minimum of 320 is enforced).",
+      "Cap ssh_wp stdout bytes and inventory JSON depth/item counts; wrap json.loads in GuardError so malformed remote list output cannot abort with an unhandled exception.",
+      "flock or atomically replace state.json; reject duplicate site ids in validate_site so concurrent or mis-keyed client sites cannot clobber one row.",
+      "cmd_update_staging should record post-update plugin/theme versions; live pinning of that set is the peer promote finding, not a second staging trust-expansion bug."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py%23read_png_rgb::skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py%23IHDR%20dimensions::skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py::MEMORY-SAFETY-AND-BINARY.md%23Out-of-bounds%20read%20or%20write",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/compare-pages.py#read_png_rgb",
+      "boundary": "skills/wp-update-guard/scripts/compare-pages.py#IHDR dimensions",
+      "subsystem": "skills/wp-update-guard/scripts/compare-pages.py",
+      "attack_class": "MEMORY-SAFETY-AND-BINARY.md#Out-of-bounds read or write"
+    },
+    "surface": "compare-pages.py PNG files from --before/--after",
+    "boundary": "Custom PNG decoder trusts IHDR and IDAT without size caps",
+    "subsystem": "compare-pages.py PNG compare",
+    "attack_class": "PNG parser bounds and short-buffer handling",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "MEMORY-SAFETY-AND-BINARY.md#Core discipline",
+      "MEMORY-SAFETY-AND-BINARY.md#Out-of-bounds read or write",
+      "MEMORY-SAFETY-AND-BINARY.md#Integer overflow, underflow, truncation, and signedness",
+      "MEMORY-SAFETY-AND-BINARY.md#Universal moves",
+      "MEMORY-SAFETY-AND-BINARY.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-compare",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/compare-pages.py",
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "Chunk length must be checked against remaining file bytes before IHDR/IDAT are trusted; a short declared body must not be indexed as if it were the declared length.",
+        "method": "source",
+        "result": "read_png_rgb unpacks length as >I and slices data[pos+8:pos+8+length] (compare-pages.py:43-47). Python slicing is bounds-safe, so a length larger than the remainder yields a short chunk rather than a native OOB read. IHDR then does struct.unpack('>IIBB', chunk[:10]) (line 49) with no check that the chunk is 13 bytes or even 10 bytes; a short IHDR raises uncaught struct.error, not PngError.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "Decompressed IDAT length must be validated against IHDR width/height/channels before any raw[i] or row[o] index.",
+        "method": "source",
+        "result": "After zlib.decompress (line 62) there is no check that len(raw) == height * (1 + width * channels). filter_type = raw[i] (line 69) IndexErrors when a row filter byte is missing. filt = raw[i:i+stride] (line 71) silently short-slices; recon is a zeroed bytearray(stride) (line 73) so a short row is zero-padded and later row[o:o+2] (lines 95-97) stays in-bounds. That is defined wrong output, not an OOB. compare_images catches only PngError (lines 141-146), so IndexError/struct.error/zlib.error abort the process.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "Attacker-controlled width/height/length arithmetic must not wrap or truncate before it is used as an index or allocation size.",
+        "method": "source",
+        "result": "width/height/length are unsigned 32-bit via struct (lines 44, 49). stride = width * channels, pos += 12 + length, and total = bw * bh use Python ints with no wrap. Reconstruction indexes (recon[x-channels], prev[x], row[o+2]) stay within stride when the height loop completes. No integer-wrap OOB path exists in this interpreter.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "A bounds miss must not promote live or corrupt another principal's memory; lower-trust PNG authors must be able to reach a native invalid read/write.",
+        "method": "source",
+        "result": "Guard-path PNGs are written by Playwright page.screenshot (capture-pages.mjs:111-112), not by staging HTML. Crafted short/interlaced/CRC-invalid PNGs require write access to --before/--after or operator-chosen folders. A decode crash happens before --out is written (compare-pages.py:227-231); cmd_compare fail-closes when compare.json is absent (guard.py:405-407) and does not set pass_promote. CPython IndexError/struct.error is safe process termination, not memory corruption. No promote-integrity or native-OOB path survives the gates.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "read_png_rgb should reject IHDR width/height above a screenshot-scale cap, require IHDR length 13, verify len(raw) == height * (1 + width * channels) before indexing, pass max_length to zlib.decompress, and wrap struct.error/zlib.error/IndexError/MemoryError as PngError so compare_images records a page fail instead of aborting.",
+      "compare_dirs should cap file size and page count before decode; cmd_compare already fail-closes when compare.json is missing, so these caps protect the operator VM rather than the promote integrity gate.",
+      "IHDR compression/filter/interlace bytes are ignored (only the first 10 IHDR bytes are unpacked). Interlaced or non-zero compression method PNGs would be reconstructed as sequential RGB; Playwright-written files are the expected input, but an explicit reject is the smallest parser hardening."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py%23read_png_rgb::skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py%23zlib.decompress%20IDAT::skills%2Fwp-update-guard%2Fscripts%2Fcompare-pages.py::RESOURCE-EXHAUSTION-AND-AVAILABILITY.md%23Decompression%20and%20representation%20amplification",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/compare-pages.py#read_png_rgb",
+      "boundary": "skills/wp-update-guard/scripts/compare-pages.py#zlib.decompress IDAT",
+      "subsystem": "skills/wp-update-guard/scripts/compare-pages.py",
+      "attack_class": "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Decompression and representation amplification"
+    },
+    "surface": "compare-pages.py PNG files from --before/--after",
+    "boundary": "Decompression and pixel-array amplification",
+    "subsystem": "compare-pages.py PNG compare",
+    "attack_class": "PNG decompression and huge dimension allocation",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Core discipline",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Decompression and representation amplification",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Reachable fatal error or deadlock",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Universal moves",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-compare",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/compare-pages.py",
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "zlib output and IHDR-derived buffers must be capped after every expansion; file size is not an effective bound.",
+        "method": "source",
+        "result": "path.read_bytes() has no size cap (line 35). IDAT chunks are concatenated without a ceiling (lines 50-51). zlib.decompress(bytes(idat)) is called with no max_length (line 62). width/height from IHDR are used immediately as stride = width * channels and prev = bytes(stride) (lines 64-67), then height reconstruction rows and a width*height list of RGB tuples (lines 68-98). A small compressed IDAT or a uint32 IHDR can request multi-gigabyte decompressed raw plus a much larger Python tuple array. No parser-stage cap exists.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "Directory compare must bound page cardinality so many valid tiny PNGs cannot evade a per-image mental cap.",
+        "method": "source",
+        "result": "compare_dirs unions every *.png stem in both folders with no max page count (lines 170-177). Each name invokes a full decode. The only cardinality control is how many files the operator (or capture) placed in those directories.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Unbounded decode must affect another user, a shared service, a safety function's integrity, or operator-owned spend \u2014 not only the requester's own compare process.",
+        "method": "source",
+        "result": "compare-pages.py is a one-shot local CLI. guard.py runs it as a subprocess (guard.py:390-407). MemoryError/OOM or an uncaught decode exception prevents writing compare.json; cmd_compare then raises GuardError and does not enter pass_promote. Phase remains compare, so cmd_rollback still accepts the site (guard.py:434-435). Blast radius is the operator's compare child (and, on the guard path, Playwright fullPage capture which is peer-owned). No shared worker, tenant pool, or paid sink is in source. Companion rule: missing limits without concrete shared impact are hardening.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-compare",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "A lower-trust staging page must not be able to force compare amplification unless an upstream bound already stops it.",
+        "method": "source",
+        "result": "Standalone --before/--after is operator-chosen input (same principal). Guard-path files come from Playwright fullPage screenshots (capture-pages.mjs:112) of staging HTML. That can yield large valid PNGs (viewport has a minimum but no fullPage height cap in this repo), but capture pays the first cost and is a peer-owned surface. Compare then re-expands into Python tuples with no local cap. Chromium screenshot limits are not source-visible; even if present they would only shrink a self-process cost. Not a cross-principal service finding.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "read_png_rgb should reject IHDR width/height above a screenshot-scale cap, require IHDR length 13, verify len(raw) == height * (1 + width * channels) before indexing, pass max_length to zlib.decompress, and wrap struct.error/zlib.error/IndexError/MemoryError as PngError so compare_images records a page fail instead of aborting.",
+      "compare_dirs should cap file size and page count before decode; cmd_compare already fail-closes when compare.json is missing, so these caps protect the operator VM rather than the promote integrity gate.",
+      "IHDR compression/filter/interlace bytes are ignored (only the first 10 IHDR bytes are unpacked). Interlaced or non-zero compression method PNGs would be reconstructed as sequential RGB; Playwright-written files are the expected input, but an explicit reject is the smallest parser hardening."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23CLI%20argv%20and%20config%20discovery::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23STARTER_CONFIG::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Obvious%20things",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#CLI argv and config discovery",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#STARTER_CONFIG",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Obvious things"
+    },
+    "surface": "Repo-wide obvious exposures",
+    "boundary": "Hardcoded secrets, debug flags, gitignore holes, Cloudflare banned primitives",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Obvious things including secrets, eval, and banned Cloudflare cost primitives",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/compare-pages.py",
+      "skills/wp-update-guard/SKILL.md",
+      ".gitignore",
+      "README.md"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Obvious things",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-agent-secrets",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/compare-pages.py",
+      "skills/wp-update-guard/examples/wp-update-guard.json",
+      "README.md",
+      "skills/wp-update-guard/SKILL.md",
+      "AGENTS.md",
+      ".gitignore",
+      "skills/wp-update-guard/references/config.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/examples/wp-update-guard.json",
+          "README.md"
+        ],
+        "invariant": "No hardcoded passwords, API keys, tokens, Bearer credentials, or PEM/key blobs in source",
+        "method": "source",
+        "result": "Repo-wide search for password/secret/apikey/token/Bearer/BEGIN PRIVATE KEY found only documentation forbidding passwords. Example SSH targets are deploy@staging.example.net and deploy@live.example.net.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/SKILL.md",
+          "AGENTS.md",
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "No TODO/FIXME/HACK/XXX comments that disable auth, validation, or other security controls",
+        "method": "source",
+        "result": "No security-tagged TODO/FIXME/HACK/XXX. AGENTS.md uses Todo as a project-board status. SKILL.md mentions debugging only as running scripts directly.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "Debug/dev modes are not silently enableable in production via environment, query, or header",
+        "method": "source",
+        "result": "Only explicit CLI flags exist: --dry-run, --self-test, --force, --help. No DEBUG env gate, no HTTP debug/admin/status/metrics endpoints. status is a local CLI subcommand, not a network listener.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/examples/wp-update-guard.json"
+        ],
+        "invariant": "Starter/example credentials cannot authenticate to a real production host",
+        "method": "source",
+        "result": "Placeholders use example.com/example.net. No seed password or working production key is present.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          ".gitignore",
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/references/config.md"
+        ],
+        "invariant": ".gitignore covers secrets, uploads, and local run state; no .env/pem/key/credentials files are committed",
+        "method": "source",
+        "result": "Tree has no .env, credentials.json, *.pem, or *.key. .gitignore covers .wp-update-guard/, .env, .env.*, .dev.vars. wp-update-guard.json is intentionally committable. cmd_init only appends the literal .wp-update-guard/ marker, so a custom output_dir is not auto-ignored.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "No eval/exec/Function/vm.runInContext/dynamic import of attacker input; dependencies are pinned",
+        "method": "source",
+        "result": "subprocess.run uses argv lists, not shell=True. capture-pages.mjs import() loads playwright or a script-relative node_modules/playwright path, not user input. No package.json or lockfile. SKILL.md runs unpinned npx --yes playwright install chromium.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/compare-pages.py"
+        ],
+        "invariant": "No wildcard CORS, cookie flags, open redirects, or production stack-trace API; TLS required if HTTP is offered",
+        "method": "source",
+        "result": "No HTTP server, cookies, or CORS. validate_site allows http and https. GuardError emit prints str(exc) without a traceback; uncaught exceptions would still use the Python default traceback on the local CLI. Not applicable as web-protocol findings.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs",
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/SKILL.md",
+          "README.md"
+        ],
+        "invariant": "Repository does not implement Cloudflare Durable Objects, Agents SDK, Workflows, or self-rescheduling alarms",
+        "method": "source",
+        "result": "No Durable Object classes, agents package, Workflows bindings, wrangler config, setAlarm, or self-rescheduling alarm usage. The only Workflow hit is the SKILL.md heading. Banned Cloudflare cost primitives are absent.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Redact URL userinfo and wrap ssh_wp stderr/stdout in emit; do not return raw remote streams from update-staging or promote.",
+      "cmd_init should gitignore the configured output_dir, not only the literal .wp-update-guard/ path.",
+      "Pin the Playwright install in SKILL.md instead of unpinned npx --yes playwright install chromium.",
+      "If a human pause before live is desired, add an explicit confirm flag or stop cmd_run after compare so visual review can bind promote arguments."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23CLI%20argv%20and%20config%20discovery::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23main::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Wildcard",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#CLI argv and config discovery",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#main",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Wildcard"
+    },
+    "surface": "Whole guard.py surface leftover",
+    "boundary": "Any unexpected sink not covered by named classes",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Wildcard review of boring and fallback guard.py paths",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Wildcard",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Leftover guard.py sinks outside named classes still enforce the live-site phase gate",
+        "method": "source",
+        "result": "dry-run skips every phase check but only prints argv and does not save state or call SSH. cmd_run auto-promotes after pass_promote by design. snapshot --when before resets any phase into a new run. rollback is allowed from compare as well as fail_rollback and never uses live. Non-dict sites skip validate_site and can raise AttributeError. load_bundle loads state then discards it; main reloads. None of these leftover paths add a new live-mutation sink beyond the assigned promote/compare issues.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Staging and live targets are distinct hosts/paths so update-staging and rollback cannot hit live",
+        "method": "source",
+        "result": "validate_site never compares staging.ssh/wp_path with live. A config that points both at the same tree makes update-staging and rollback mutate live immediately. That is operator-authored target selection, the same authority as putting live credentials in staging, not a new confused-deputy sink.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "diff_threshold cannot become an always-pass via type coercion unless the config author sets the full 0-1 range",
+        "method": "source",
+        "result": "threshold_for uses float(value) and accepts 0..1. JSON true becomes 1.0 because bool subclasses int, which makes every pixel fraction pass. The config author already may set 1. Same-principal footgun, not a second Pass-gate root cause.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23CLI%20argv%20and%20config%20discovery::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh%20destination%20argv::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Access%20control",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#CLI argv and config discovery",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#ssh destination argv",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Access control"
+    },
+    "surface": "CLI argv, --config, and cwd walk for wp-update-guard.json",
+    "boundary": "Anyone who can run guard.py and satisfy SSH can reach configured hosts",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Access control on CLI and config-selected SSH targets",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Access control",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-guard-ssh",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "The CLI does not add an application identity; only the OS invoker plus SSH keys may reach configured hosts.",
+        "method": "source",
+        "result": "main has no authentication. Mutating subcommands require --site. Host reachability is the configured ssh string plus the invoker's keys and BatchMode=yes. That matches the designed local-operator model, not an ACL bypass.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "update-staging and rollback cannot select live; only promote uses the live object.",
+        "method": "source",
+        "result": "cmd_update_staging and cmd_rollback always pass site['staging'] to ssh_wp. cmd_promote is the only live ssh_wp caller. live_changed False is a label, not a host-identity check. Staging and live are not compared for distinct hosts; that is operator-trusted config, not a weaker permission path to the live object.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "ssh_wp uses subprocess.run with an argv list, not shell=True, so local shell metacharacters in ssh or the already-quoted wp_path do not spawn a local shell.",
+      "CLI has no application authentication; host access is the OS invoker plus SSH keys and BatchMode=yes, which is the designed local-operator model.",
+      "cmd_rollback and cmd_update_staging always pass site['staging']; there is no source path that restores inventory onto site['live'].",
+      "validate_site does not require staging and live to be distinct hosts; that is operator-trusted destination choice, not a weaker permission on the live object.",
+      "inventory stores core version but cmd_rollback never restores core; that is a functional gap, not a live-site privilege path.",
+      "find_config walks to / and does not print the resolved config path; emit the chosen path as defense in depth, but config discovery is not an SSH ACL bypass by itself."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23CLI%20argv%20and%20config%20discovery::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh%20destination%20argv::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#CLI argv and config discovery",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#ssh destination argv",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "CLI argv, --config, and cwd walk for wp-update-guard.json",
+    "boundary": "Unvalidated ssh field passed as OpenSSH destination",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Injection of SSH options or remote shell via config-controlled destination and command assembly",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-ssh",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Config ssh is only a user@host destination: reject leading dashes and place -- before the destination so OpenSSH cannot treat the field as an option.",
+        "method": "source",
+        "result": "ssh_wp requires only a non-empty string, then builds argv [ssh, -o, BatchMode=yes, <ssh>, <remote>] with no -- separator and no user@host allowlist. validate_site never reads ssh. Sibling wp_path is absolute-checked, rejects .. and ;|& whitespace, and is shlex.quoted.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "The ssh field cannot inject a local shell because subprocess.run is given a list, not shell=True.",
+        "method": "source",
+        "result": "Local shell injection via ssh or wp_path is not present. The remaining sink is OpenSSH option parsing of the destination argv token, which is not source-visible.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "guard.py:ssh_wp:unvalidated-ssh-destination-argv"
+    ],
+    "unresolved": [
+      "OS-enforced sandbox controls unavailable",
+      "OpenSSH destination-versus-option parsing for a leading-dash argv token is an OS/package fact not proven in this repository"
+    ],
+    "hardening": [
+      "ssh_wp uses subprocess.run with an argv list, not shell=True, so local shell metacharacters in ssh or the already-quoted wp_path do not spawn a local shell.",
+      "CLI has no application authentication; host access is the OS invoker plus SSH keys and BatchMode=yes, which is the designed local-operator model.",
+      "cmd_rollback and cmd_update_staging always pass site['staging']; there is no source path that restores inventory onto site['live'].",
+      "validate_site does not require staging and live to be distinct hosts; that is operator-trusted destination choice, not a weaker permission on the live object.",
+      "inventory stores core version but cmd_rollback never restores core; that is a functional gap, not a live-site privilege path.",
+      "find_config walks to / and does not print the resolved config path; emit the chosen path as defense in depth, but config discovery is not an SSH ACL bypass by itself."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_compare::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_promote%20phase%20gate::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Business%20logic::skills%2Fwp-update-guard%2FSKILL.md%23pass_promote",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_compare",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#cmd_promote phase gate",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Business logic",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#pass_promote"
+    },
+    "surface": "Compare JSON and page_results driving Pass vs Rolled back",
+    "boundary": "pass_promote is the only coded gate before live WP-CLI updates",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "State-machine and Pass criteria vs documented HTTP 200 requirement",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Business logic",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "pass_promote is reachable only after snapshot before, staging update, after screenshots, and a full key-page Pass",
+        "method": "source",
+        "result": "cmd_promote only checks row.phase == pass_promote. cmd_snapshot(when=after) allows phase update_staging, which is the post-before-snapshot state before cmd_update_staging runs. Single-phase snapshot after + compare can therefore emit pass_promote with row.updated still empty. cmd_run does not take this skip; the CLI phase check does.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "A coded Pass requires HTTP 200 on every configured key page plus pixel/size checks",
+        "method": "source",
+        "result": "SKILL.md Pass rules require HTTP 200, same size, and threshold. cmd_compare copies compare.json pass into phase pass_promote and never reads capture.json status or site.pages. compare_dirs globs PNGs only, so a key page missing from both before and after is omitted. Pixel-identical error pages therefore promote.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Editing state.json is not a lower-trust promote bypass relative to the OS invoker",
+        "method": "source",
+        "result": "state.json has no MAC or phase binding. A writer who can set phase to pass_promote can call promote. That writer is the same OS invoker who already has live SSH via config, so this is not a privilege gain.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard.guard.snapshot-after-skips-staging-update",
+      "wp-update-guard.guard.pass-predicate-omits-http-and-page-set"
+    ],
+    "unresolved": [],
+    "lifecycle": "compare to promote",
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_compare::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_promote%20phase%20gate::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Chained%20vulnerabilities%20and%20trust%20boundaries::skills%2Fwp-update-guard%2FSKILL.md%23pass_promote",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_compare",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#cmd_promote phase gate",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#pass_promote"
+    },
+    "surface": "Compare JSON and page_results driving Pass vs Rolled back",
+    "boundary": "Pixel pass plus missing capture-status check before live update",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Chained capture status, compare, and promote assumptions",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Chained vulnerabilities and trust boundaries",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "Capture HTTP status and capture.ok are consumed before compare may Pass",
+        "method": "source",
+        "result": "capture-pages.mjs records status, sets ok for 200-399, screenshots even on 4xx/5xx, and exits 1 when any page is not ok. capture_pages accepts return codes 0 and 1, returns capture.json, and cmd_snapshot never inspects ok or status before advancing phase.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Compare and promote assume capture produced a complete configured-page Pass including HTTP 200",
+        "method": "source",
+        "result": "compare-pages.py does not read capture.json. cmd_compare gates live updates on report.pass only. The capture-status signal is dropped at the guard handoff, so a pixel match of two error/login pages, or a subset of configured pages, still yields pass_promote.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard.guard.pass-predicate-omits-http-and-page-set"
+    ],
+    "unresolved": [],
+    "lifecycle": "compare to promote",
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_list::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23site_state::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Feature%20abuse%20and%20data%20leakage",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_list",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#site_state",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Feature abuse and data leakage"
+    },
+    "surface": "Multi-site config and state.json rows",
+    "boundary": "Per-site state isolation and artifact export",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Feature abuse of list/status/export of client site data",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Feature abuse and data leakage",
+    "selected_companion_blocks": [
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Missing tenant or owner enforcement",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "list/status/export cannot disclose another owner's site data to a lower-privilege principal",
+        "method": "source",
+        "result": "There is no authenticated tenant. The OS invoker reads the whole committed config. cmd_list and cmd_status emit id, name, phase, decision, URLs, page ids, and threshold already present in that config. Inventory lives in one shared state.json keyed by site_id. No unauthorized reader exists in source.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Per-site rows cannot be selected or mutated as a different site",
+        "method": "source",
+        "result": "get_site returns the first matching id; validate_site does not require unique ids, so a duplicate id makes the later site unreachable and shares one state row. site_state keys only on the selected id. list/status return before save_json, so setdefault does not persist. Whole-file save_json can lose a sibling site's row under concurrent runs; that is same-operator integrity, not cross-tenant disclosure.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_promote::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_promote%20phase%20gate::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::SUPPLY-CHAIN-AND-RELEASE.md%23Update%20metadata%20and%20rollback%20confusion::skills%2Fwp-update-guard%2FSKILL.md%23pass_promote",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_promote",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#cmd_promote phase gate",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "SUPPLY-CHAIN-AND-RELEASE.md#Update metadata and rollback confusion",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#pass_promote"
+    },
+    "surface": "Live WP-CLI plugin/theme update --all",
+    "boundary": "Promote reapplies latest channel updates rather than pinned staging versions",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Update metadata and rollback confusion on promote vs inventory",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "SUPPLY-CHAIN-AND-RELEASE.md#Core discipline",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Update metadata and rollback confusion",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Plugin and extension trust expansion",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Universal moves",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/references/wp-cli.md"
+        ],
+        "invariant": "Promote installs the plugin/theme/core versions that were present on staging after the passing test",
+        "method": "source",
+        "result": "Inventory is taken only before the staging update and is used for staging rollback pins. cmd_promote ignores inventory and re-issues plugin update --all, theme update --all, and optional core update against live. No post-update staging versions, names, or digests are bound. Live can receive a newer channel result, a different installed set, or a package that failed on staging.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Promote is atomic and live has a recovery path if a later command fails",
+        "method": "source",
+        "result": "ssh_wp raises before phase is set to done, and main saves state only on success. A successful plugin update --all followed by a failed theme or core update leaves live partially mutated. Rollback targets staging only. inventory.core is recorded and never restored; with core_update that is a documented plugin/theme-only rollback, not a live-channel pin failure.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard.guard.promote-unpinned-update-all"
+    ],
+    "unresolved": [],
+    "lifecycle": "promote to live",
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_rollback::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23rollback%20phase%20gate::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::DATA-ISOLATION-AND-LIFECYCLE.md%23Restore%20reintroduces%20invalid%20state::skills%2Fwp-update-guard%2FSKILL.md%23fail_rollback",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_rollback",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#rollback phase gate",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#fail_rollback"
+    },
+    "surface": "cmd_rollback phase gate after a failed after-snapshot",
+    "boundary": "Persisted screenshot_after refuses rollback so staging stays on the new updates",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Recovery refusal after capture fatal",
+    "lifecycle": "fail_rollback after capture fatal",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/scripts/capture-pages.mjs"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Business logic",
+    "selected_companion_blocks": [
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "No HTTP server or identity protocol."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No cloud IAM or Workers."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "No custom RPC/broker."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 3,
+    "status": "candidate",
+    "agent_id": "hunter-wave3-recovery",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md",
+      "skills/wp-update-guard/references/wp-cli.md",
+      "skills/wp-update-guard/scripts/capture-pages.mjs",
+      "skills/wp-update-guard/scripts/compare-pages.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave3-recovery",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md",
+          "skills/wp-update-guard/references/wp-cli.md"
+        ],
+        "invariant": "After staging has been mutated, cmd_rollback must still accept the persisted phase so inventory restore can run",
+        "method": "source",
+        "result": "cmd_update_staging persists phase screenshot_after after plugin/theme (and optional core) SSH updates. cmd_rollback allows only fail_rollback or compare and otherwise raises 'rollback is for a failed compare'. SKILL.md names screenshot_after as 'after screenshots are saved' and says a broken page rolls back on its own; the coded phase is set before after-screenshots exist. wp-cli.md treats update_staging as a staging-mutation phase, but that phase is also outside the rollback allowlist.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave3-recovery",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/capture-pages.mjs"
+        ],
+        "invariant": "A fatal after-snapshot must persist a rollbackable phase or invoke restore; it must not leave screenshot_after as the last saved state",
+        "method": "source",
+        "result": "cmd_snapshot(when=after) does not change phase until capture_pages returns. capture_pages raises GuardError when the Node exit is not 0 or 1, or when capture.json is missing and stdout is not JSON. loadPlaywright process.exit(2) is fatal. An uncaught page.screenshot({fullPage:true}) throw hits main().catch, exits 1 without writing capture.json, and becomes GuardError('screenshot capture did not return JSON'). main() saves state.json only after a successful command, so the last persisted phase remains screenshot_after.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave3-recovery",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/scripts/compare-pages.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "cmd_run must reach restore after an after-capture fatal; a later command must not be the only recovery path",
+        "method": "source",
+        "result": "From screenshot_after, cmd_run only retries snapshot after. It never calls cmd_rollback unless phase is already fail_rollback. cmd_compare does accept screenshot_after; missing after PNGs fail compare_images and a non-empty before set yields pass=false, which would persist fail_rollback. That compare-then-rollback sequence is a same-operator escape hatch. run, rollback, and the 'do not skip steps' runbook do not take it.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave3-recovery",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "A cmd_run that already applied staging updates must persist inventory so a later rollback can restore the pre-update set",
+        "method": "source",
+        "result": "cmd_run chains snapshot-before, update-staging, and snapshot-after in one process. SSH updates run before after-capture. GuardError from the after-capture skips save_json, so a run started from idle or done leaves the prior persisted phase and no new inventory while staging already has the new packages. restore_items then has nothing to install even if the phase gate were opened.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "wp-update-guard.guard.rollback-refuses-screenshot-after"
+    ],
+    "unresolved": [
+      "OS-enforced sandbox controls unavailable"
+    ],
+    "hardening": [
+      "cmd_promote still requires pass_promote, so a stuck screenshot_after phase cannot update live.",
+      "cmd_compare already accepts screenshot_after and treats missing after PNGs as page failures; that is a same-operator escape hatch, not a second root cause.",
+      "inventory.core is recorded and never restored; that plugin/theme-only rollback contract is already noted on the peer promote unit."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_status%20emit::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23emit::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Cryptography%20and%20secrets",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_status emit",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#emit",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Cryptography and secrets"
+    },
+    "surface": "JSON status and command stdout including SSH output",
+    "boundary": "Secrets and remote stderr printed to the operator/agent",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Secrets handling, logging, and hardcoded credentials",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/SKILL.md",
+      ".gitignore"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Cryptography and secrets",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-agent-secrets",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/examples/wp-update-guard.json",
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/examples/wp-update-guard.json"
+        ],
+        "invariant": "Repository source and starter/example config contain no hardcoded passwords, API keys, tokens, or private key material",
+        "method": "source",
+        "result": "No crypto primitives, tokens, HMAC, or key material exist. STARTER_CONFIG and examples/wp-update-guard.json use reserved example.com/example.net placeholders and deploy@ usernames only. uuid4 is used only to name run directories.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "cmd_status and list JSON omit SSH destinations, wp_path, inventory, and raw remote streams",
+        "method": "source",
+        "result": "cmd_status emits id, name, phase, run_id, decision, error, page ids, threshold, and staging/live URLs. cmd_list emits id, name, phase, and decision. Neither prints ssh, wp_path, inventory, or WP-CLI streams. row['error'] is initialized and cleared but never assigned a remote failure string, and GuardError returns before save_json, so status.error is not a persisted stderr channel.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "Remote SSH/WP-CLI stdout and stderr are not copied into operator/agent-visible JSON without redaction",
+        "method": "source",
+        "result": "Invariant does not hold as a best practice, but the recipient is the same OS invoker who already holds the SSH identity. ssh_wp raises GuardError with stderr or stdout truncated to 800 characters; main emit prints that as error. cmd_update_staging and cmd_promote embed full successful WP-CLI stdout in the updated[].output field. cmd_run only emits phase summaries. SKILL.md secrets-off-screen is prompt-only. No source-visible password appears on these paths; treating remote text as potentially secret is hardening, not a principal/resource failure.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-agent-secrets",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "HTTP(S) URLs echoed by status/emit do not include embedded userinfo credentials",
+        "method": "source",
+        "result": "validate_site accepts any http/https URL, including userinfo. cmd_status echoes staging_url and live_url verbatim. Docs forbid passwords in config. Echoing operator-supplied URL userinfo to the same operator is hardening (redact userinfo), not a crossed-principal disclosure.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Redact URL userinfo and wrap ssh_wp stderr/stdout in emit; do not return raw remote streams from update-staging or promote.",
+      "cmd_init should gitignore the configured output_dir, not only the literal .wp-update-guard/ path.",
+      "Pin the Playwright install in SKILL.md instead of unpinned npx --yes playwright install chromium.",
+      "If a human pause before live is desired, add an explicit confirm flag or stop cmd_run after compare so visual review can bind promote arguments."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23cmd_update_staging::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23plugin%20theme%20update%20--all::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::SUPPLY-CHAIN-AND-RELEASE.md%23Plugin%20and%20extension%20trust%20expansion::skills%2Fwp-update-guard%2FSKILL.md%23update_staging",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#cmd_update_staging",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#plugin theme update --all",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "SUPPLY-CHAIN-AND-RELEASE.md#Plugin and extension trust expansion",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#update_staging"
+    },
+    "surface": "Staging WP-CLI plugin/theme update --all",
+    "boundary": "cmd_update_staging applies unpinned update --all before visual compare",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Plugin and extension trust expansion on staging update path",
+    "lifecycle": "update_staging",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "SUPPLY-CHAIN-AND-RELEASE.md#Core discipline",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Plugin and extension trust expansion",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Update metadata and rollback confusion",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Universal moves",
+      "SUPPLY-CHAIN-AND-RELEASE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 2,
+    "status": "covered",
+    "agent_id": "hunter-wave2-gaps",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md",
+      "skills/wp-update-guard/SKILL.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/references/wp-cli.md",
+          "skills/wp-update-guard/SKILL.md"
+        ],
+        "invariant": "Staging plugin/theme/core updates must not expand host authority beyond the operator-requested same-user WP-CLI update of already-installed packages",
+        "method": "source",
+        "result": "cmd_update_staging always targets site['staging'] and runs plugin update --all, theme update --all, and optional core update when config.core_update is true. That is the documented product step: unpinned channel updates on staging before screenshots. Companion rule: intended installation of arbitrary same-user plugins is not a privilege boundary. No source path lets this command select site['live'].",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Staging update --all must bind the tested plugin/theme identity before live promotion consumes it",
+        "method": "source",
+        "result": "Inventory is taken only before the staging update and is the rollback pin set. cmd_update_staging stores the command strings in row.updated, not post-update names or versions. Live promote re-issues the same unbound update --all. That broken live handoff is peer-owned (wp-update-guard.guard.promote-unpinned-update-all) and is not re-filed here.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "parent_note": "Added after wave-1 critic accepted hunter uncovered / missing-unit proposals.",
+    "hardening": [
+      "Pin Playwright (package version and browser revision) in the skill and drop `--yes`, or vendor a lockfile and verify checksums before chromium.launch.",
+      "Cap fullPage screenshot clip height and output bytes in capture-pages.mjs; also cap viewport width/height (today only a minimum of 320 is enforced).",
+      "Cap ssh_wp stdout bytes and inventory JSON depth/item counts; wrap json.loads in GuardError so malformed remote list output cannot abort with an unhandled exception.",
+      "flock or atomically replace state.json; reject duplicate site ids in validate_site so concurrent or mis-keyed client sites cannot clobber one row.",
+      "cmd_update_staging should record post-update plugin/theme versions; live pinning of that set is the peer promote finding, not a second staging trust-expansion bug."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23inventory%20json.loads::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23unbounded%20inventory%20JSON::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::RESOURCE-EXHAUSTION-AND-AVAILABILITY.md%23Decompression%20and%20representation%20amplification",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#inventory json.loads",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#unbounded inventory JSON",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Decompression and representation amplification"
+    },
+    "surface": "Remote WP-CLI plugin/theme JSON over SSH",
+    "boundary": "Unbounded json.loads of ssh_wp stdout into inventory",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Representation amplification from remote inventory JSON",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Core discipline",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Decompression and representation amplification",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Universal moves",
+      "RESOURCE-EXHAUSTION-AND-AVAILABILITY.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 2,
+    "status": "covered",
+    "agent_id": "hunter-wave2-gaps",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "ssh_wp stdout must be size-capped and inventory JSON must be depth- and cardinality-capped after expansion before it is retained",
+        "method": "source",
+        "result": "ssh_wp captures the entire remote stdout with timeout 300 and no max bytes. inventory() json.loads plugin list and theme list JSON with no schema, depth, or item cap, then cmd_snapshot stores the object on the site row and save_json persists it. Success stdout is not truncated (only GuardError detail is sliced to 800). JSON text to Python objects is roughly linear, not a zip/alias bomb. json.loads is not wrapped; JSONDecodeError/RecursionError escape as an unhandled exception.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Remote inventory amplification must hit another user, a shared service, a safety function, or operator-owned spend",
+        "method": "source",
+        "result": "The producer is the operator-configured staging WP-CLI over SSH. The consumer is the same OS invoker's guard.py process and state.json on the workstation. There is no shared worker or tenant pool. A huge or deeply nested payload can OOM or crash this one CLI; save_json is skipped on exception so promote is not reached. Companion rule: missing limits without concrete shared impact are hardening. Replay of inventory names into install is peer-owned.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "parent_note": "Added after wave-1 critic accepted hunter uncovered / missing-unit proposals.",
+    "hardening": [
+      "Pin Playwright (package version and browser revision) in the skill and drop `--yes`, or vendor a lockfile and verify checksums before chromium.launch.",
+      "Cap fullPage screenshot clip height and output bytes in capture-pages.mjs; also cap viewport width/height (today only a minimum of 320 is enforced).",
+      "Cap ssh_wp stdout bytes and inventory JSON depth/item counts; wrap json.loads in GuardError so malformed remote list output cannot abort with an unhandled exception.",
+      "flock or atomically replace state.json; reject duplicate site ids in validate_site so concurrent or mis-keyed client sites cannot clobber one row.",
+      "cmd_update_staging should record post-update plugin/theme versions; live pinning of that set is the peer promote finding, not a second staging trust-expansion bug."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23load_bundle%20output_dir::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23output_dir%20path%20join::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Resource%20and%20file%20handling",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#load_bundle output_dir",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#output_dir path join",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Resource and file handling"
+    },
+    "surface": "Config output_dir beside wp-update-guard.json",
+    "boundary": "Artifact root can be absolute or traverse parents",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Path handling for output_dir, state.json, and run screenshots",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Resource and file handling",
+    "selected_companion_blocks": [],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "covered",
+    "agent_id": "hunter-guard-logic",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Artifact writes from output_dir stay under the directory beside wp-update-guard.json",
+        "method": "source",
+        "result": "load_bundle does root / str(output_dir). pathlib treats an absolute output_dir as the entire destination and keeps .. segments. save_json then mkdir+writes state.json and run trees there. run_dir concatenates unsanitized state run_id under output_dir/runs. No resolve-and-is-relative check exists. Architecture treats committed config and local state as operator input, so this is same-principal write, not a distinct path-traversal privilege gain.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-logic",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "site_id and generated run_id cannot escape the artifact tree",
+        "method": "source",
+        "result": "site_id is bound by SITE_ID_RE before path join. run_id is tool-generated as timestamp-plus-hex on before-snapshot, but later reads accept any state.json string, including .. . The writer of state.json is the same OS invoker that can write those destinations directly.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "hardening": [
+      "Constrain output_dir to a relative path under the config parent and reject ..; restrict run_id to the generated timestamp-hex charset before path join.",
+      "Reject duplicate site ids in validate_site and flock state.json so concurrent per-site runs cannot drop another site's row.",
+      "Refuse update-staging, rollback, and promote when staging.ssh plus wp_path equal live.ssh plus wp_path.",
+      "Reject bool and other non-real numbers in threshold_for so JSON true cannot become a 1.0 always-pass.",
+      "When core_update was applied, restore inventory.core on staging rollback or stop and say core cannot be rolled back.",
+      "load_bundle loads state.json and discards it; main reloads. Return the loaded state or stop reading it twice."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23save_json%20state.json::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23whole-file%20state%20write::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::DATA-ISOLATION-AND-LIFECYCLE.md%23Restore%20reintroduces%20invalid%20state",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#save_json state.json",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#whole-file state write",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state"
+    },
+    "surface": "Multi-site config and shared state.json",
+    "boundary": "Whole-file save_json without flock or duplicate site-id rejection",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Multi-site state lifecycle integrity under concurrent runs",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 2,
+    "status": "covered",
+    "agent_id": "hunter-wave2-gaps",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Per-site phase, inventory, and decision cannot be replaced by a stale whole-file snapshot, and restored rows must be re-authorized against current policy",
+        "method": "source",
+        "result": "save_json is an unflocked path.write_text of the entire state object. main loads state, mutates one site row, and writes the whole file. Concurrent runs of different --site values can persist a stale sibling row, including an old pass_promote or an old inventory. There is no MAC, run_id binding, or compare-to-current-policy step on the written row. SKILL.md says one site at a time; the CLI does not serialize.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-wave2-gaps",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Distinct config sites cannot share or steal one another's state row",
+        "method": "source",
+        "result": "validate_site does not require unique ids. get_site returns the first matching id, so a later duplicate is unreachable and both names share one state.sites[id] row. site_state keys only on that id. The writer and both site owners are the same OS invoker who already holds every site's SSH. Companion rule: do not treat a same-principal race or duplicate-id footgun as privilege gain or cross-tenant restore.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [],
+    "unresolved": [],
+    "parent_note": "Added after wave-1 critic accepted hunter uncovered / missing-unit proposals.",
+    "hardening": [
+      "Pin Playwright (package version and browser revision) in the skill and drop `--yes`, or vendor a lockfile and verify checksums before chromium.launch.",
+      "Cap fullPage screenshot clip height and output bytes in capture-pages.mjs; also cap viewport width/height (today only a minimum of 320 is enforced).",
+      "Cap ssh_wp stdout bytes and inventory JSON depth/item counts; wrap json.loads in GuardError so malformed remote list output cannot abort with an unhandled exception.",
+      "flock or atomically replace state.json; reject duplicate site ids in validate_site so concurrent or mis-keyed client sites cannot clobber one row.",
+      "cmd_update_staging should record post-update plugin/theme versions; live pinning of that set is the peer promote finding, not a second staging trust-expansion bug."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh_wp%20inventory%20JSON::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23restore_items%20inventory::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::ATTACK-CLASSES.md%23Injection",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#ssh_wp inventory JSON",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#restore_items inventory",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "ATTACK-CLASSES.md#Injection"
+    },
+    "surface": "Remote WP-CLI plugin/theme JSON over SSH",
+    "boundary": "Rollback installs versions from stored inventory",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Second-order injection from remote inventory into rollback WP-CLI",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "ordinary_attack_class_block": "ATTACK-CLASSES.md#Injection",
+    "selected_companion_blocks": [
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Import and restore authority expansion",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-ssh",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Inventory name and version cannot change remote-shell meaning when replayed into rollback WP-CLI.",
+        "method": "source",
+        "result": "restore_items shlex.quotes name and version before interpolating into the remote command string. POSIX shell metacharacters in those fields are neutralized. kind is only the hardcoded strings plugin or theme.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Inventory name is an allowlisted plugin/theme slug so wp plugin/theme install cannot treat it as a URL, path, or leading-dash option.",
+        "method": "source",
+        "result": "inventory() json.loads remote plugin/theme list JSON with no schema or slug/semver check. restore_items skips only missing name/version or status==must-use, then passes the quoted name as the install positional. No source control binds name to [a-z0-9-]+. WP-CLI's handling of URL/path/--exec tokens is not in this repository.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "guard.py:restore_items:inventory-name-wp-cli-install"
+    ],
+    "unresolved": [
+      "OS-enforced sandbox controls unavailable",
+      "Whether plugin list JSON can emit a URL, path, or leading-dash name, and whether WP-CLI install treats that token as a zip source or global option, are WordPress/WP-CLI facts not visible here"
+    ],
+    "hardening": [
+      "ssh_wp uses subprocess.run with an argv list, not shell=True, so local shell metacharacters in ssh or the already-quoted wp_path do not spawn a local shell.",
+      "CLI has no application authentication; host access is the OS invoker plus SSH keys and BatchMode=yes, which is the designed local-operator model.",
+      "cmd_rollback and cmd_update_staging always pass site['staging']; there is no source path that restores inventory onto site['live'].",
+      "validate_site does not require staging and live to be distinct hosts; that is operator-trusted destination choice, not a weaker permission on the live object.",
+      "inventory stores core version but cmd_rollback never restores core; that is a functional gap, not a live-site privilege path.",
+      "find_config walks to / and does not print the resolved config path; emit the chosen path as defense in depth, but config discovery is not an SSH ACL bypass by itself."
+    ]
+  },
+  {
+    "coverage_id": "skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23ssh_wp%20inventory%20JSON::skills%2Fwp-update-guard%2Fscripts%2Fguard.py%23restore_items%20inventory::skills%2Fwp-update-guard%2Fscripts%2Fguard.py::DATA-ISOLATION-AND-LIFECYCLE.md%23Import%20and%20restore%20authority%20expansion::skills%2Fwp-update-guard%2FSKILL.md%23fail_rollback",
+    "canonical_refs": {
+      "surface": "skills/wp-update-guard/scripts/guard.py#ssh_wp inventory JSON",
+      "boundary": "skills/wp-update-guard/scripts/guard.py#restore_items inventory",
+      "subsystem": "skills/wp-update-guard/scripts/guard.py",
+      "attack_class": "DATA-ISOLATION-AND-LIFECYCLE.md#Import and restore authority expansion",
+      "lifecycle": "skills/wp-update-guard/SKILL.md#fail_rollback"
+    },
+    "surface": "Remote WP-CLI plugin/theme JSON over SSH",
+    "boundary": "Restore/rollback of staging plugins and themes",
+    "subsystem": "guard.py orchestrator",
+    "attack_class": "Inventory restore as import/restore authority expansion",
+    "starting_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "ordinary_attack_class_block": null,
+    "selected_companion_blocks": [
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Core discipline",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Import and restore authority expansion",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Restore reintroduces invalid state",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Universal moves",
+      "DATA-ISOLATION-AND-LIFECYCLE.md#Validation rules"
+    ],
+    "excluded_blocks": [
+      {
+        "block": "WEB-PROTOCOL-AND-AUTH.md#Core discipline",
+        "reason": "Repository has no HTTP server, session, JWT, OAuth, or identity protocol; Playwright is an outbound client only."
+      },
+      {
+        "block": "CLOUD-AND-DEPLOYMENT.md#Core discipline",
+        "reason": "No infrastructure-as-code, Workers, Durable Objects, Workflows, or provider IAM in source."
+      },
+      {
+        "block": "PROTOCOLS-RPC-AND-MESSAGING.md#Core discipline",
+        "reason": "SSH is a fixed local argv helper, not a custom RPC, queue, or broker protocol."
+      },
+      {
+        "block": "DESKTOP-MOBILE-AND-LOCAL-IPC.md#Core discipline",
+        "reason": "No deep links, webview bridge, exported components, or local IPC server."
+      }
+    ],
+    "prior_status": "none",
+    "attempts": [],
+    "wave": 1,
+    "status": "candidate",
+    "agent_id": "hunter-guard-ssh",
+    "reviewed_paths": [
+      "skills/wp-update-guard/scripts/guard.py",
+      "skills/wp-update-guard/references/wp-cli.md"
+    ],
+    "local_checks": [
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py",
+          "skills/wp-update-guard/references/wp-cli.md"
+        ],
+        "invariant": "Rollback re-authorizes inventory as untrusted install input and restores only plugins/themes that changed on staging, never live.",
+        "method": "source",
+        "result": "cmd_rollback always targets site['staging'] and never site['live'], matching the written live-isolation rule. It does not verify staging and live are distinct hosts. restore_items runs install --force for every name+version row, not a changed-only diff as wp-cli.md states. Inventory has no schema, MAC, or run_id binding; extra names become extra deploy-user installs.",
+        "artifact": null
+      },
+      {
+        "agent_id": "hunter-guard-ssh",
+        "reviewed_paths": [
+          "skills/wp-update-guard/scripts/guard.py"
+        ],
+        "invariant": "Restored plugin/theme versions are re-checked against current policy rather than trusting snapshot provenance alone.",
+        "method": "source",
+        "result": "Reinstalling snapshot versions is the documented rollback contract, including versions later yanked or removed from staging after the snapshot. must-use rows are skipped. core is stored on the snapshot and never restored. Reintroducing the snapshot set is designed behavior, not a separate privilege gain.",
+        "artifact": null
+      }
+    ],
+    "result_fingerprints": [
+      "guard.py:restore_items:inventory-name-wp-cli-install"
+    ],
+    "unresolved": [
+      "OS-enforced sandbox controls unavailable",
+      "Whether a staging web/plugin principal can add inventory rows that WP-CLI will install as a different package is a WordPress/WP-CLI fact not visible here"
+    ],
+    "lifecycle": "fail_rollback restore of staging inventory",
+    "hardening": [
+      "ssh_wp uses subprocess.run with an argv list, not shell=True, so local shell metacharacters in ssh or the already-quoted wp_path do not spawn a local shell.",
+      "CLI has no application authentication; host access is the OS invoker plus SSH keys and BatchMode=yes, which is the designed local-operator model.",
+      "cmd_rollback and cmd_update_staging always pass site['staging']; there is no source path that restores inventory onto site['live'].",
+      "validate_site does not require staging and live to be distinct hosts; that is operator-trusted destination choice, not a weaker permission on the live object.",
+      "inventory stores core version but cmd_rollback never restores core; that is a functional gap, not a live-site privilege path.",
+      "find_config walks to / and does not print the resolved config path; emit the chosen path as defense in depth, but config discovery is not an SSH ACL bypass by itself."
+    ]
+  }
+]
